@@ -17,3 +17,9 @@ endif()
 
 add_compile_options("$<$<CONFIG:Release>:${RELEASE_FLAGS}>"
                     "$<$<CONFIG:Debug>:${DEBUG_FLAGS}>")
+
+if(CMAKE_CXX_COMPILER_ID MATCHES "Clang")
+  # Workaround for std::expected not available in clang.
+  add_compile_options(-stdlib=libstdc++ -D__cpp_concepts=202002
+                      -Wno-builtin-macro-redefined)
+endif()
