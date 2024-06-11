@@ -13,3 +13,4 @@ include(enable_unit_testing)
 
 add_subdirectory(apps)
 add_subdirectory(src)
+add_subdirectory(tests)

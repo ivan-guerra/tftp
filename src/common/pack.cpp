@@ -10,13 +10,14 @@
 namespace tftp {
 
 static void PackUint16(uint16_t value, std::size_t offset, TftpPacket& packet) {
-  std::copy(&value, &value + sizeof(OpCode), packet.begin() + offset);
+  packet[offset] = value >> 8;
+  packet[offset + 1] = value & 0xFF;
 }
 
 static void PackStr(std::string_view str, std::size_t offset,
                     TftpPacket& packet) {
   std::copy(str.cbegin(), str.cend(), packet.begin() + offset);
-  packet[str.size() + 1] = 0; /* Append the null terminator. */
+  packet[offset + str.size()] = 0; /* Append the null terminator. */
 }
 
 static void PackData(const BlockData& data, std::size_t offset,
@@ -38,9 +39,37 @@ static TftpPacket PackRequest(OpCode req_code, std::string_view filename,
   offset += filename.size() + 1;
 
   PackStr(mode, offset, packet);
-  offset += mode.size() + 1;
 
   return packet;
+}
+
+static std::optional<uint16_t> UnpackUint16(const TftpPacket& packet,
+                                            std::size_t offset) {
+  if ((offset + sizeof(uint16_t)) > packet.size()) {
+    return std::nullopt;
+  }
+  return (packet[offset] << 8) | packet[offset + 1];
+}
+
+static std::optional<std::string> UnpackStr(const TftpPacket& packet,
+                                            std::size_t offset) {
+  std::size_t i = offset;
+  std::string str;
+  for (; i < packet.size() && packet[i]; ++i) {
+    str += static_cast<char>(packet[i]);
+  }
+  /* Check if the null terminator was found. */
+  return (i == packet.size()) ? std::optional<std::string>{} : str;
+}
+
+static bool IsValidMode(std::string_view candidate) {
+  return ((candidate == SendMode::kNetAscii) ||
+          (candidate == SendMode::kOctet) || (candidate == SendMode::kMail));
+}
+
+static bool IsValidErrCode(uint16_t err_code) {
+  return ((err_code >= ErrorCode::kNotDefined) &&
+          (err_code <= ErrorCode::kNoSuchUser));
 }
 
 TftpPacket PackReadRequest(const ReadRequestMsg& msg) {
@@ -58,43 +87,14 @@ TftpPacket PackData(const DataMsg& msg) {
 
   std::size_t offset = 0;
   PackUint16(msg.op, offset, packet);
-  offset += sizeof(OpCode);
+  offset += sizeof(msg.op);
 
   PackUint16(msg.block_num, offset, packet);
-  offset += sizeof(BlockNum);
+  offset += sizeof(msg.block_num);
 
   PackData(msg.data, offset, packet);
-  offset += msg.data.size();
 
   return packet;
-}
-
-static std::optional<uint16_t> UnpackUint16(const TftpPacket& packet,
-                                            std::size_t offset) {
-  if ((offset + sizeof(uint16_t)) >= packet.size()) {
-    return std::nullopt;
-  }
-  return (packet[offset] << 8) | packet[offset + 1];
-}
-
-static std::optional<std::string> UnpackStr(const TftpPacket& packet,
-                                            std::size_t offset) {
-  std::size_t i = offset;
-  std::string str;
-  for (; i < packet.size() && packet[i]; ++i) {
-    str += static_cast<char>(packet[i]);
-  }
-  return (packet[i]) ? std::optional<std::string>{} : str;
-}
-
-static bool IsValidMode(std::string_view candidate) {
-  return ((candidate == SendMode::kNetAscii) ||
-          (candidate == SendMode::kOctet) || (candidate == SendMode::kMail));
-}
-
-static bool IsValidErrCode(uint16_t err_code) {
-  return ((err_code >= ErrorCode::kNotDefined) &&
-          (err_code <= ErrorCode::kNoSuchUser));
 }
 
 TftpPacket PackAck(const AckMsg& msg) {
@@ -106,7 +106,6 @@ TftpPacket PackAck(const AckMsg& msg) {
   offset += sizeof(msg.op);
 
   PackUint16(msg.block_num, offset, packet);
-  offset += sizeof(msg.block_num);
 
   return packet;
 }
@@ -118,13 +117,12 @@ TftpPacket PackError(const ErrorMsg& msg) {
 
   std::size_t offset = 0;
   PackUint16(OpCode::kError, offset, packet);
-  offset += sizeof(OpCode);
+  offset += sizeof(msg.op);
 
   PackUint16(msg.err_code, offset, packet);
   offset += sizeof(msg.err_code);
 
   PackStr(msg.err_msg, offset, packet);
-  offset += msg.err_msg.size() + 1;
 
   return packet;
 }
