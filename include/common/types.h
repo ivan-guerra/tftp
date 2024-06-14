@@ -11,6 +11,7 @@ using BlockNum = uint16_t;
 using BlockData = std::vector<uint8_t>;
 using Mode = std::string;
 using TftpPacket = std::vector<uint8_t>;
+using HostName = std::string;
 
 enum ErrorCode : uint16_t {
   kNotDefined = 0,

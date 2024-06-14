@@ -5,7 +5,6 @@
 #include <cstdint>
 #include <expected>
 #include <optional>
-#include <string>
 #include <string_view>
 
 #include "common/types.h"
@@ -40,22 +39,22 @@ class Config {
   static std::expected<Config, ErrorCode> Create(std::string_view mode,
                                                  std::string_view port_range,
                                                  bool literal_mode,
-                                                 std::string_view host);
+                                                 const HostName& host);
 
-  Mode GetMode() const { return mode_; }
+  const Mode& GetMode() const { return mode_; }
   PortRange GetPortRange() const { return ports_; }
   bool GetLiteralMode() const { return literal_mode_; }
-  std::string GetHost() const { return host_; }
+  const HostName& GetHost() const { return host_; }
 
   std::optional<Config::ErrorCode> SetMode(std::string_view mode);
   std::optional<Config::ErrorCode> SetPortRange(std::string_view port_range);
   void SetLiteralMode(bool literal_mode) { literal_mode_ = literal_mode; }
-  void SetHost(std::string_view host) { host_ = host; }
+  void SetHost(const HostName& host) { host_ = host; }
 
  private:
   Config() = delete;
   Config(const tftp::Mode& mode, const struct PortRange& port_range,
-         bool literal_mode, std::string_view host)
+         bool literal_mode, const HostName& host)
       : mode_(mode),
         ports_(port_range),
         literal_mode_(literal_mode),
@@ -64,7 +63,7 @@ class Config {
   tftp::Mode mode_;
   struct PortRange ports_;
   bool literal_mode_ = false;
-  std::string host_;
+  HostName host_;
 };
 
 }  // namespace client

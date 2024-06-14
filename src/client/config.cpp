@@ -64,7 +64,7 @@ static std::expected<Config::PortRange, Config::ErrorCode> ParsePortRange(
 
 std::expected<Config, Config::ErrorCode> Config::Create(
     std::string_view mode, std::string_view port_range, bool literal_mode,
-    std::string_view host) {
+    const HostName& host) {
   auto parsed_mode = ParseMode(mode);
   if (!parsed_mode) {
     return std::unexpected(parsed_mode.error());
