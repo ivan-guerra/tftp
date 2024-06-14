@@ -7,7 +7,7 @@ project(
 
 add_library(${PROJECT_NAME} STATIC)
 
-target_sources(${PROJECT_NAME} PRIVATE config.cpp)
+target_sources(${PROJECT_NAME} PRIVATE config.cpp client_cmd.cpp)
 
 target_include_directories(${PROJECT_NAME} PUBLIC ${TFTP_INCLUDE_DIR})
 
