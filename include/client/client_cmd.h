@@ -1,6 +1,7 @@
 #ifndef CMD_H_
 #define CMD_H_
 
+#include <array>
 #include <cstdint>
 #include <string>
 #include <string_view>
@@ -14,7 +15,8 @@ namespace client {
 
 using Id = std::string;
 using Seconds = uint32_t;
-using TransferArgs = std::vector<std::string>;
+using File = std::string;
+using FileList = std::vector<File>;
 
 namespace CmdId {
 constexpr Id kConnect = "connect";
@@ -29,13 +31,22 @@ constexpr Id kQuit = "quit";
 constexpr Id kHelp = "?";
 }  // namespace CmdId
 
-enum class ParseStatus {
-  kSuccess,
+enum ParseStatus {
+  kSuccess = 0,
+  kInvalidNumArgs,
+  kInvalidPortNum,
+  kInvalidMode,
+  kInvalidTimeout,
+  kStatusCount,
 };
 
 enum class ExecStatus {
   kSuccess,
 };
+
+constexpr std::array<const char*, ParseStatus::kStatusCount> kParseStatusToStr =
+    {"success", "invalid number of arguments", "invalid port number",
+     "invalid mode", "invalid timeout"};
 
 class Cmd {
  public:
@@ -59,10 +70,14 @@ class GetCmd : public Cmd {
   ExecStatus Execute(client::Config& config) final;
   ParseStatus Parse(std::string_view cmdline) final;
 
-  const TransferArgs& Args() const { return args_; }
+  const File& RemoteFile() const { return remote_file_; }
+  const File& LocalFile() const { return local_file_; }
+  const FileList& Files() const { return files_; }
 
  private:
-  TransferArgs args_;
+  File remote_file_;
+  File local_file_;
+  FileList files_;
 };
 
 class PutCmd : public Cmd {
@@ -73,10 +88,16 @@ class PutCmd : public Cmd {
   ExecStatus Execute(client::Config& config) final;
   ParseStatus Parse(std::string_view cmdline) final;
 
-  const TransferArgs& Args() const { return args_; }
+  const File& RemoteFile() const { return remote_file_; }
+  const File& LocalFile() const { return local_file_; }
+  const File& RemoteDir() const { return remote_dir_; }
+  const FileList& Files() const { return files_; }
 
  private:
-  TransferArgs args_;
+  File remote_file_;
+  File local_file_;
+  File remote_dir_;
+  FileList files_;
 };
 
 class ConnectCmd : public Cmd {
@@ -97,11 +118,16 @@ class ConnectCmd : public Cmd {
 
 class LiteralCmd : public Cmd {
  public:
-  LiteralCmd() : Cmd(CmdId::kLiteral) {}
+  LiteralCmd() : Cmd(CmdId::kLiteral), literal_mode_(false) {}
   virtual ~LiteralCmd() = default;
 
   ExecStatus Execute(client::Config& config) final;
   ParseStatus Parse(std::string_view cmdline) final;
+
+  bool LiteralMode() const { return literal_mode_; }
+
+ private:
+  bool literal_mode_;
 };
 
 class ModeCmd : public Cmd {
