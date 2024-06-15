@@ -3,7 +3,7 @@
 #include <algorithm>
 #include <string>
 
-#include "client/client_cmd.h"
+#include "client/cmd.h"
 
 TEST(CmdParseTest, ParseValidConnectCmdWithoutPortReturnsSuccess) {
   std::string cmdline = "connect localhost";
