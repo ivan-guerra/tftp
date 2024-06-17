@@ -3,6 +3,7 @@
 
 #include <array>
 #include <cstdint>
+#include <expected>
 #include <string>
 #include <string_view>
 #include <vector>
@@ -42,6 +43,7 @@ enum ParseStatus {
 
 enum class ExecStatus {
   kSuccess,
+  kNotImplemented,
 };
 
 constexpr std::array<const char*, ParseStatus::kStatusCount> kParseStatusToStr =
@@ -50,8 +52,9 @@ constexpr std::array<const char*, ParseStatus::kStatusCount> kParseStatusToStr =
 
 class Cmd {
  public:
-  virtual ExecStatus Execute(client::Config& config) = 0;
-  virtual ParseStatus Parse(std::string_view cmdline) = 0;
+  virtual ExecStatus Execute([[gnu::unused]] client::Config& config) {
+    return ExecStatus::kNotImplemented;
+  }
 
   const Id& Id() const { return id_; }
 
@@ -64,17 +67,24 @@ class Cmd {
 
 class GetCmd : public Cmd {
  public:
-  GetCmd() : Cmd(CmdId::kGet) {}
+  static std::expected<GetCmd, ParseStatus> Create(std::string_view cmdline);
+
   virtual ~GetCmd() = default;
 
   ExecStatus Execute(client::Config& config) final;
-  ParseStatus Parse(std::string_view cmdline) final;
 
   const File& RemoteFile() const { return remote_file_; }
   const File& LocalFile() const { return local_file_; }
   const FileList& Files() const { return files_; }
 
  private:
+  GetCmd() = delete;
+  GetCmd(const File& remote_file, const File& local_file, const FileList& files)
+      : Cmd(CmdId::kGet),
+        remote_file_(remote_file),
+        local_file_(local_file),
+        files_(files) {}
+
   File remote_file_;
   File local_file_;
   FileList files_;
@@ -82,11 +92,11 @@ class GetCmd : public Cmd {
 
 class PutCmd : public Cmd {
  public:
-  PutCmd() : Cmd(CmdId::kPut) {}
+  static std::expected<PutCmd, ParseStatus> Create(std::string_view cmdline);
+
   virtual ~PutCmd() = default;
 
   ExecStatus Execute(client::Config& config) final;
-  ParseStatus Parse(std::string_view cmdline) final;
 
   const File& RemoteFile() const { return remote_file_; }
   const File& LocalFile() const { return local_file_; }
@@ -94,6 +104,15 @@ class PutCmd : public Cmd {
   const FileList& Files() const { return files_; }
 
  private:
+  PutCmd() = delete;
+  PutCmd(const File& remote_file, const File& local_file,
+         const File& remote_dir, const FileList& files)
+      : Cmd(CmdId::kPut),
+        remote_file_(remote_file),
+        local_file_(local_file),
+        remote_dir_(remote_dir),
+        files_(files) {}
+
   File remote_file_;
   File local_file_;
   File remote_dir_;
@@ -102,105 +121,134 @@ class PutCmd : public Cmd {
 
 class ConnectCmd : public Cmd {
  public:
-  ConnectCmd() : Cmd(CmdId::kConnect), host_(""), port_(0) {}
+  static std::expected<ConnectCmd, ParseStatus> Create(
+      std::string_view cmdline);
+
   virtual ~ConnectCmd() = default;
 
   ExecStatus Execute(client::Config& config) final;
-  ParseStatus Parse(std::string_view cmdline) final;
 
   std::string Host() const { return host_; }
   uint16_t Port() const { return port_; }
 
  private:
+  ConnectCmd() = delete;
+  ConnectCmd(const HostName& host, uint16_t port)
+      : Cmd(CmdId::kConnect), host_(host), port_(port) {}
+
   std::string host_;
   uint16_t port_ = 0;
 };
 
 class LiteralCmd : public Cmd {
  public:
-  LiteralCmd() : Cmd(CmdId::kLiteral), literal_mode_(false) {}
+  static std::expected<LiteralCmd, ParseStatus> Create();
+
   virtual ~LiteralCmd() = default;
 
   ExecStatus Execute(client::Config& config) final;
-  ParseStatus Parse(std::string_view cmdline) final;
 
   bool LiteralMode() const { return literal_mode_; }
 
  private:
+  LiteralCmd() : Cmd(CmdId::kLiteral), literal_mode_(false) {}
+
   bool literal_mode_;
 };
 
 class ModeCmd : public Cmd {
  public:
-  ModeCmd() : Cmd(CmdId::kMode) {}
+  static std::expected<ModeCmd, ParseStatus> Create(std::string_view cmdline);
+
   virtual ~ModeCmd() = default;
 
   ExecStatus Execute(client::Config& config) final;
-  ParseStatus Parse(std::string_view cmdline) final;
 
   const Mode& Mode() const { return mode_; }
 
  private:
+  ModeCmd() = delete;
+  explicit ModeCmd(const tftp::Mode mode) : Cmd(CmdId::kMode), mode_(mode) {}
+
   tftp::Mode mode_;
 };
 
 class StatusCmd : public Cmd {
  public:
-  StatusCmd() : Cmd(CmdId::kStatus) {}
+  static std::expected<StatusCmd, ParseStatus> Create();
+
   virtual ~StatusCmd() = default;
 
   ExecStatus Execute(client::Config& config) final;
-  ParseStatus Parse(std::string_view cmdline) final;
+
+ private:
+  StatusCmd() : Cmd(CmdId::kStatus) {}
 };
 
 class TimeoutCmd : public Cmd {
  public:
-  TimeoutCmd() : Cmd(CmdId::kTimeout), timeout_(0) {}
+  static std::expected<TimeoutCmd, ParseStatus> Create(
+      std::string_view cmdline);
+
   virtual ~TimeoutCmd() = default;
 
   ExecStatus Execute(client::Config& config) final;
-  ParseStatus Parse(std::string_view cmdline) final;
 
   Seconds Timeout() const { return timeout_; }
 
  private:
+  TimeoutCmd() = delete;
+  explicit TimeoutCmd(Seconds timeout)
+      : Cmd(CmdId::kTimeout), timeout_(timeout) {}
+
   Seconds timeout_;
 };
 
 class RexmtCmd : public Cmd {
  public:
-  RexmtCmd() : Cmd(CmdId::kRexmt), rextm_timeout_(0) {}
+  static std::expected<RexmtCmd, ParseStatus> Create(std::string_view cmdline);
+
   virtual ~RexmtCmd() = default;
 
   ExecStatus Execute(client::Config& config) final;
-  ParseStatus Parse(std::string_view cmdline) final;
 
-  Seconds RexmtTimeout() const { return rextm_timeout_; }
+  Seconds RexmtTimeout() const { return rexmt_timeout_; }
 
  private:
-  Seconds rextm_timeout_;
+  RexmtCmd() = delete;
+  explicit RexmtCmd(Seconds rexmt_timeout)
+      : Cmd(CmdId::kRexmt), rexmt_timeout_(rexmt_timeout) {}
+
+  Seconds rexmt_timeout_;
 };
 
 class QuitCmd : public Cmd {
  public:
-  QuitCmd() : Cmd(CmdId::kQuit) {}
+  static std::expected<QuitCmd, ParseStatus> Create();
+
   virtual ~QuitCmd() = default;
 
   ExecStatus Execute(client::Config& config) final;
-  ParseStatus Parse(std::string_view cmdline) final;
+
+ private:
+  QuitCmd() : Cmd(CmdId::kQuit) {}
 };
 
 class HelpCmd : public Cmd {
  public:
-  HelpCmd() : Cmd(CmdId::kHelp) {}
+  static std::expected<HelpCmd, ParseStatus> Create(std::string_view cmdline);
+
   virtual ~HelpCmd() = default;
 
   ExecStatus Execute(client::Config& config) final;
-  ParseStatus Parse(std::string_view cmdline) final;
 
   const tftp::client::Id& TargetCmd() const { return target_cmd_; }
 
  private:
+  HelpCmd() = delete;
+  explicit HelpCmd(const tftp::client::Id& target_cmd)
+      : Cmd(CmdId::kHelp), target_cmd_(target_cmd) {}
+
   tftp::client::Id target_cmd_;
 };
 

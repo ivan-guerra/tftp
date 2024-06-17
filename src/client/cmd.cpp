@@ -46,104 +46,111 @@ static std::expected<Seconds, ParseStatus> ParseTimeValue(
 }
 
 ExecStatus ConnectCmd::Execute([[gnu::unused]] client::Config& config) {
-  return ExecStatus::kSuccess;
+  return ExecStatus::kNotImplemented;
 }
 
-ParseStatus ConnectCmd::Parse(std::string_view cmdline) {
+std::expected<ConnectCmd, ParseStatus> ConnectCmd::Create(
+    std::string_view cmdline) {
   TokenList args = Tokenize(cmdline);
   if (args.size() < 2 || args.size() > 3) {
-    return ParseStatus::kInvalidNumArgs;
+    return std::unexpected(ParseStatus::kInvalidNumArgs);
   }
 
-  host_ = args[1];
+  uint16_t port = 0;
   if (args.size() == 3) {
     if (!IsPositiveNum(args[2])) {
-      return ParseStatus::kInvalidPortNum;
+      return std::unexpected(ParseStatus::kInvalidPortNum);
     }
 
     uint64_t port_tmp = std::stoull(args[2]);
     if (port_tmp > std::numeric_limits<uint16_t>::max()) {
-      return ParseStatus::kInvalidPortNum;
+      return std::unexpected(ParseStatus::kInvalidPortNum);
     }
 
-    port_ = static_cast<uint16_t>(port_tmp);
+    port = static_cast<uint16_t>(port_tmp);
   }
 
-  return ParseStatus::kSuccess;
+  return ConnectCmd(args[1], port);
 }
 
 ExecStatus GetCmd::Execute([[gnu::unused]] client::Config& config) {
-  return ExecStatus::kSuccess;
+  return ExecStatus::kNotImplemented;
 }
 
-ParseStatus GetCmd::Parse(std::string_view cmdline) {
+std::expected<GetCmd, ParseStatus> GetCmd::Create(std::string_view cmdline) {
   TokenList args = Tokenize(cmdline);
   if (args.size() <= 1) {
-    return ParseStatus::kInvalidNumArgs;
+    return std::unexpected(ParseStatus::kInvalidNumArgs);
   }
   args.erase(args.begin()); /* Erase the command code. */
 
+  FileList files;
   if (args.size() == 1) { /* Fetch a single file. */
-    files_ = {args[0]};
+    files = {args[0]};
   }
 
+  File remote_file;
+  File local_file;
   if (args.size() == 2) { /* Fetch remotefile to localfile */
-    remote_file_ = args[0];
-    local_file_ = args[1];
+    remote_file = args[0];
+    local_file = args[1];
   }
 
   if (args.size() > 2) { /* Fetching a set of files. */
-    files_ = args;
+    files = args;
   }
 
-  return ParseStatus::kSuccess;
+  return GetCmd(remote_file, local_file, files);
 }
 
 ExecStatus PutCmd::Execute([[gnu::unused]] client::Config& config) {
-  return ExecStatus::kSuccess;
+  return ExecStatus::kNotImplemented;
 }
 
-ParseStatus PutCmd::Parse(std::string_view cmdline) {
+std::expected<PutCmd, ParseStatus> PutCmd::Create(std::string_view cmdline) {
   TokenList args = Tokenize(cmdline);
   if (args.size() <= 1) {
-    return ParseStatus::kInvalidNumArgs;
+    return std::unexpected(ParseStatus::kInvalidNumArgs);
   }
   args.erase(args.begin()); /* Erase the command code. */
 
+  FileList files;
   if (args.size() == 1) { /* Transfer a single file. */
-    files_ = {args[0]};
+    files = {args[0]};
   }
 
+  File local_file;
+  File remote_file;
   if (args.size() == 2) { /* Transfer remotefile to localfile */
-    local_file_ = args[0];
-    remote_file_ = args[1];
+    local_file = args[0];
+    remote_file = args[1];
   }
 
+  File remote_dir;
   if (args.size() > 2) { /* Transferring a set of files to a remote dir. */
-    remote_dir_ = args.back();
-    files_ = FileList(args.cbegin(), args.cbegin() + args.size() - 1);
+    remote_dir = args.back();
+    files = FileList(args.cbegin(), args.cbegin() + args.size() - 1);
   }
 
-  return ParseStatus::kSuccess;
+  return PutCmd(remote_file, local_file, remote_dir, files);
 }
 
 ExecStatus LiteralCmd::Execute([[gnu::unused]] client::Config& config) {
-  return ExecStatus::kSuccess;
+  return ExecStatus::kNotImplemented;
 }
 
-ParseStatus LiteralCmd::Parse([[gnu::unused]] std::string_view cmdline) {
-  /* Nothing to parse. */
-  return ParseStatus::kSuccess;
+std::expected<LiteralCmd, ParseStatus> LiteralCmd::Create() {
+  return LiteralCmd();
 }
 
 ExecStatus ModeCmd::Execute([[gnu::unused]] client::Config& config) {
-  return ExecStatus::kSuccess;
+  return ExecStatus::kNotImplemented;
 }
 
-ParseStatus ModeCmd::Parse(std::string_view cmdline) {
+std::expected<ModeCmd, ParseStatus> ModeCmd::Create(std::string_view cmdline) {
   TokenList args = Tokenize(cmdline);
   if (args.size() != 2) {
-    return ParseStatus::kInvalidNumArgs;
+    return std::unexpected(ParseStatus::kInvalidNumArgs);
   }
 
   std::string mode_lower(args[1].size(), 0);
@@ -151,85 +158,75 @@ ParseStatus ModeCmd::Parse(std::string_view cmdline) {
                  [](char c) { return std::tolower(c); });
 
   if ((mode_lower != SendMode::kNetAscii) && (mode_lower != SendMode::kOctet)) {
-    return ParseStatus::kInvalidMode;
+    return std::unexpected(ParseStatus::kInvalidMode);
   }
 
-  mode_ = mode_lower;
-
-  return ParseStatus::kSuccess;
+  return ModeCmd(mode_lower);
 }
 
 ExecStatus StatusCmd::Execute([[gnu::unused]] client::Config& config) {
-  return ExecStatus::kSuccess;
+  return ExecStatus::kNotImplemented;
 }
 
-ParseStatus StatusCmd::Parse([[gnu::unused]] std::string_view cmdline) {
-  /* Nothing to parse. */
-  return ParseStatus::kSuccess;
+std::expected<StatusCmd, ParseStatus> StatusCmd::Create() {
+  return StatusCmd();
 }
 
 ExecStatus TimeoutCmd::Execute([[gnu::unused]] client::Config& config) {
-  return ExecStatus::kSuccess;
+  return ExecStatus::kNotImplemented;
 }
 
-ParseStatus TimeoutCmd::Parse(std::string_view cmdline) {
+std::expected<TimeoutCmd, ParseStatus> TimeoutCmd::Create(
+    std::string_view cmdline) {
   TokenList args = Tokenize(cmdline);
   if (args.size() != 2) {
-    return ParseStatus::kInvalidNumArgs;
+    return std::unexpected(ParseStatus::kInvalidNumArgs);
   }
 
   auto time_val = ParseTimeValue(args[1]);
   if (!time_val) {
-    return time_val.error();
+    return std::unexpected(time_val.error());
   }
 
-  timeout_ = *time_val;
-
-  return ParseStatus::kSuccess;
+  return TimeoutCmd(*time_val);
 }
 
 ExecStatus RexmtCmd::Execute([[gnu::unused]] client::Config& config) {
-  return ExecStatus::kSuccess;
+  return ExecStatus::kNotImplemented;
 }
 
-ParseStatus RexmtCmd::Parse(std::string_view cmdline) {
+std::expected<RexmtCmd, ParseStatus> RexmtCmd::Create(
+    std::string_view cmdline) {
   TokenList args = Tokenize(cmdline);
   if (args.size() != 2) {
-    return ParseStatus::kInvalidNumArgs;
+    return std::unexpected(ParseStatus::kInvalidNumArgs);
   }
 
   auto time_val = ParseTimeValue(args[1]);
   if (!time_val) {
-    return time_val.error();
+    return std::unexpected(time_val.error());
   }
 
-  rextm_timeout_ = *time_val;
-
-  return ParseStatus::kSuccess;
+  return RexmtCmd(*time_val);
 }
 
 ExecStatus QuitCmd::Execute([[gnu::unused]] client::Config& config) {
-  return ExecStatus::kSuccess;
+  return ExecStatus::kNotImplemented;
 }
 
-ParseStatus QuitCmd::Parse([[gnu::unused]] std::string_view cmdline) {
-  /* Nothing to parse. */
-  return ParseStatus::kSuccess;
-}
+std::expected<QuitCmd, ParseStatus> QuitCmd::Create() { return QuitCmd(); }
 
 ExecStatus HelpCmd::Execute([[gnu::unused]] client::Config& config) {
-  return ExecStatus::kSuccess;
+  return ExecStatus::kNotImplemented;
 }
 
-ParseStatus HelpCmd::Parse(std::string_view cmdline) {
+std::expected<HelpCmd, ParseStatus> HelpCmd::Create(std::string_view cmdline) {
   TokenList args = Tokenize(cmdline);
   if (args.size() != 2) {
-    return ParseStatus::kInvalidNumArgs;
+    return std::unexpected(ParseStatus::kInvalidNumArgs);
   }
 
-  target_cmd_ = args[1];
-
-  return ParseStatus::kSuccess;
+  return HelpCmd(args[1]);
 }
 
 }  // namespace client
