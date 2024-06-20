@@ -6,6 +6,7 @@
 #include <expected>
 #include <iterator>
 #include <limits>
+#include <memory>
 #include <sstream>
 #include <string>
 #include <string_view>
@@ -48,8 +49,7 @@ ExecStatus ConnectCmd::Execute([[gnu::unused]] ClientState& config) {
   return ExecStatus::kNotImplemented;
 }
 
-std::expected<ConnectCmd, ParseStatus> ConnectCmd::Create(
-    std::string_view cmdline) {
+ExpectedCmd<ConnectCmd> ConnectCmd::Create(std::string_view cmdline) {
   TokenList args = Tokenize(cmdline);
   if (args.size() < 2 || args.size() > 3) {
     return std::unexpected(ParseStatus::kInvalidNumArgs);
@@ -69,14 +69,14 @@ std::expected<ConnectCmd, ParseStatus> ConnectCmd::Create(
     port = static_cast<uint16_t>(port_tmp);
   }
 
-  return ConnectCmd(args[1], port);
+  return std::make_shared<ConnectCmd>(args[1], port);
 }
 
 ExecStatus GetCmd::Execute([[gnu::unused]] ClientState& config) {
   return ExecStatus::kNotImplemented;
 }
 
-std::expected<GetCmd, ParseStatus> GetCmd::Create(std::string_view cmdline) {
+ExpectedCmd<GetCmd> GetCmd::Create(std::string_view cmdline) {
   TokenList args = Tokenize(cmdline);
   if (args.size() <= 1) {
     return std::unexpected(ParseStatus::kInvalidNumArgs);
@@ -99,14 +99,14 @@ std::expected<GetCmd, ParseStatus> GetCmd::Create(std::string_view cmdline) {
     files = args;
   }
 
-  return GetCmd(remote_file, local_file, files);
+  return std::make_shared<GetCmd>(remote_file, local_file, files);
 }
 
 ExecStatus PutCmd::Execute([[gnu::unused]] ClientState& config) {
   return ExecStatus::kNotImplemented;
 }
 
-std::expected<PutCmd, ParseStatus> PutCmd::Create(std::string_view cmdline) {
+ExpectedCmd<PutCmd> PutCmd::Create(std::string_view cmdline) {
   TokenList args = Tokenize(cmdline);
   if (args.size() <= 1) {
     return std::unexpected(ParseStatus::kInvalidNumArgs);
@@ -131,22 +131,22 @@ std::expected<PutCmd, ParseStatus> PutCmd::Create(std::string_view cmdline) {
     files = FileList(args.cbegin(), args.cbegin() + args.size() - 1);
   }
 
-  return PutCmd(remote_file, local_file, remote_dir, files);
+  return std::make_shared<PutCmd>(remote_file, local_file, remote_dir, files);
 }
 
 ExecStatus LiteralCmd::Execute([[gnu::unused]] ClientState& config) {
   return ExecStatus::kNotImplemented;
 }
 
-std::expected<LiteralCmd, ParseStatus> LiteralCmd::Create() {
-  return LiteralCmd();
+ExpectedCmd<LiteralCmd> LiteralCmd::Create() {
+  return std::make_shared<LiteralCmd>();
 }
 
 ExecStatus ModeCmd::Execute([[gnu::unused]] ClientState& config) {
   return ExecStatus::kNotImplemented;
 }
 
-std::expected<ModeCmd, ParseStatus> ModeCmd::Create(std::string_view cmdline) {
+ExpectedCmd<ModeCmd> ModeCmd::Create(std::string_view cmdline) {
   TokenList args = Tokenize(cmdline);
   if (args.size() != 2) {
     return std::unexpected(ParseStatus::kInvalidNumArgs);
@@ -160,23 +160,22 @@ std::expected<ModeCmd, ParseStatus> ModeCmd::Create(std::string_view cmdline) {
     return std::unexpected(ParseStatus::kInvalidMode);
   }
 
-  return ModeCmd(mode_lower);
+  return std::make_shared<ModeCmd>(mode_lower);
 }
 
 ExecStatus StatusCmd::Execute([[gnu::unused]] ClientState& config) {
   return ExecStatus::kNotImplemented;
 }
 
-std::expected<StatusCmd, ParseStatus> StatusCmd::Create() {
-  return StatusCmd();
+ExpectedCmd<StatusCmd> StatusCmd::Create() {
+  return std::make_shared<StatusCmd>();
 }
 
 ExecStatus TimeoutCmd::Execute([[gnu::unused]] ClientState& config) {
   return ExecStatus::kNotImplemented;
 }
 
-std::expected<TimeoutCmd, ParseStatus> TimeoutCmd::Create(
-    std::string_view cmdline) {
+ExpectedCmd<TimeoutCmd> TimeoutCmd::Create(std::string_view cmdline) {
   TokenList args = Tokenize(cmdline);
   if (args.size() != 2) {
     return std::unexpected(ParseStatus::kInvalidNumArgs);
@@ -187,15 +186,14 @@ std::expected<TimeoutCmd, ParseStatus> TimeoutCmd::Create(
     return std::unexpected(time_val.error());
   }
 
-  return TimeoutCmd(*time_val);
+  return std::make_shared<TimeoutCmd>(*time_val);
 }
 
 ExecStatus RexmtCmd::Execute([[gnu::unused]] ClientState& config) {
   return ExecStatus::kNotImplemented;
 }
 
-std::expected<RexmtCmd, ParseStatus> RexmtCmd::Create(
-    std::string_view cmdline) {
+ExpectedCmd<RexmtCmd> RexmtCmd::Create(std::string_view cmdline) {
   TokenList args = Tokenize(cmdline);
   if (args.size() != 2) {
     return std::unexpected(ParseStatus::kInvalidNumArgs);
@@ -206,26 +204,26 @@ std::expected<RexmtCmd, ParseStatus> RexmtCmd::Create(
     return std::unexpected(time_val.error());
   }
 
-  return RexmtCmd(*time_val);
+  return std::make_shared<RexmtCmd>(*time_val);
 }
 
 ExecStatus QuitCmd::Execute([[gnu::unused]] ClientState& config) {
   return ExecStatus::kNotImplemented;
 }
 
-std::expected<QuitCmd, ParseStatus> QuitCmd::Create() { return QuitCmd(); }
+ExpectedCmd<QuitCmd> QuitCmd::Create() { return std::make_shared<QuitCmd>(); }
 
 ExecStatus HelpCmd::Execute([[gnu::unused]] ClientState& config) {
   return ExecStatus::kNotImplemented;
 }
 
-std::expected<HelpCmd, ParseStatus> HelpCmd::Create(std::string_view cmdline) {
+ExpectedCmd<HelpCmd> HelpCmd::Create(std::string_view cmdline) {
   TokenList args = Tokenize(cmdline);
   if (args.size() != 2) {
     return std::unexpected(ParseStatus::kInvalidNumArgs);
   }
 
-  return HelpCmd(args[1]);
+  return std::make_shared<HelpCmd>(args[1]);
 }
 
 }  // namespace client

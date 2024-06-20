@@ -10,8 +10,9 @@ TEST(CmdParseTest, CreateValidConnectCmdWithoutPortReturnsSuccess) {
   auto conn_cmd = tftp::client::ConnectCmd::Create(cmdline);
 
   ASSERT_TRUE(conn_cmd);
-  ASSERT_EQ(conn_cmd->Host(), "localhost");
-  ASSERT_EQ(conn_cmd->Port(), 0);
+  ASSERT_TRUE(*conn_cmd);
+  ASSERT_EQ((*conn_cmd)->Host(), "localhost");
+  ASSERT_EQ((*conn_cmd)->Port(), 0);
 }
 
 TEST(CmdParseTest, CreateValidConnectCmdWithPortReturnsSuccess) {
@@ -19,8 +20,9 @@ TEST(CmdParseTest, CreateValidConnectCmdWithPortReturnsSuccess) {
   auto conn_cmd = tftp::client::ConnectCmd::Create(cmdline);
 
   ASSERT_TRUE(conn_cmd);
-  ASSERT_EQ(conn_cmd->Host(), "localhost");
-  ASSERT_EQ(conn_cmd->Port(), 5555);
+  ASSERT_TRUE(*conn_cmd);
+  ASSERT_EQ((*conn_cmd)->Host(), "localhost");
+  ASSERT_EQ((*conn_cmd)->Port(), 5555);
 }
 
 TEST(CmdParseTest, CreateConnectCmdWithInvalidArgCountReturnsInvalidNumArgs) {
@@ -66,7 +68,8 @@ TEST(CmdParseTest, CreateTimeoutWithValidTimeArgReturnsSuccess) {
   auto timeout_cmd = tftp::client::TimeoutCmd::Create(cmdline);
 
   ASSERT_TRUE(timeout_cmd);
-  ASSERT_EQ(timeout_cmd->Timeout(), 1234);
+  ASSERT_TRUE(*timeout_cmd);
+  ASSERT_EQ((*timeout_cmd)->Timeout(), 1234);
 }
 
 TEST(CmdParseTest, CreateTimeoutWithInvalidArgCountReturnsInvalidNumArgs) {
@@ -114,7 +117,8 @@ TEST(CmdParseTest, CreateRexmtWithValidTimeArgReturnsSuccess) {
   auto timeout_cmd = tftp::client::RexmtCmd::Create(cmdline);
 
   ASSERT_TRUE(timeout_cmd);
-  ASSERT_EQ(timeout_cmd->RexmtTimeout(), 1234);
+  ASSERT_TRUE(*timeout_cmd);
+  ASSERT_EQ((*timeout_cmd)->RexmtTimeout(), 1234);
 }
 
 TEST(CmdParseTest, CreateRexmtWithInvalidArgCountReturnsInvalidNumArgs) {
@@ -161,7 +165,8 @@ TEST(CmdParseTest, CreateHelpCmdWithValidArgsReturnsSuccess) {
   auto help_cmd = tftp::client::HelpCmd::Create(cmdline);
 
   ASSERT_TRUE(help_cmd);
-  ASSERT_EQ(help_cmd->TargetCmd(), "foo");
+  ASSERT_TRUE(*help_cmd);
+  ASSERT_EQ((*help_cmd)->TargetCmd(), "foo");
 }
 
 TEST(CmdParseTest, CreateHelpCmdWithInvalidArgCountReturnsInvalidNumArgs) {
@@ -191,10 +196,11 @@ TEST(CmdParseTest, CreateGetCmdSingleFileReturnsSuccess) {
   auto get_cmd = tftp::client::GetCmd::Create(cmdline);
 
   ASSERT_TRUE(get_cmd);
-  ASSERT_TRUE(get_cmd->LocalFile().empty());
-  ASSERT_TRUE(get_cmd->RemoteFile().empty());
-  ASSERT_EQ(get_cmd->Files().size(), 1);
-  ASSERT_EQ(get_cmd->Files()[0], "foo");
+  ASSERT_TRUE(*get_cmd);
+  ASSERT_TRUE((*get_cmd)->LocalFile().empty());
+  ASSERT_TRUE((*get_cmd)->RemoteFile().empty());
+  ASSERT_EQ((*get_cmd)->Files().size(), 1);
+  ASSERT_EQ((*get_cmd)->Files()[0], "foo");
 }
 
 TEST(CmdParseTest, CreateGetCmdWithRemoteAndLocalFileReturnsSuccess) {
@@ -204,9 +210,10 @@ TEST(CmdParseTest, CreateGetCmdWithRemoteAndLocalFileReturnsSuccess) {
   auto get_cmd = tftp::client::GetCmd::Create(cmdline);
 
   ASSERT_TRUE(get_cmd);
-  ASSERT_EQ(get_cmd->LocalFile(), local_file);
-  ASSERT_EQ(get_cmd->RemoteFile(), remote_file);
-  ASSERT_TRUE(get_cmd->Files().empty());
+  ASSERT_TRUE(*get_cmd);
+  ASSERT_EQ((*get_cmd)->LocalFile(), local_file);
+  ASSERT_EQ((*get_cmd)->RemoteFile(), remote_file);
+  ASSERT_TRUE((*get_cmd)->Files().empty());
 }
 
 TEST(CmdParseTest, CreateGetCmdMultiFileReturnsSuccess) {
@@ -217,12 +224,13 @@ TEST(CmdParseTest, CreateGetCmdMultiFileReturnsSuccess) {
 
   auto get_cmd = tftp::client::GetCmd::Create(cmdline);
   ASSERT_TRUE(get_cmd);
-  ASSERT_TRUE(get_cmd->LocalFile().empty());
-  ASSERT_TRUE(get_cmd->RemoteFile().empty());
+  ASSERT_TRUE(*get_cmd);
+  ASSERT_TRUE((*get_cmd)->LocalFile().empty());
+  ASSERT_TRUE((*get_cmd)->RemoteFile().empty());
 
-  ASSERT_EQ(get_cmd->Files().size(), kFiles.size());
+  ASSERT_EQ((*get_cmd)->Files().size(), kFiles.size());
   for (std::size_t i = 0; i < kFiles.size(); ++i) {
-    ASSERT_EQ(get_cmd->Files()[i], kFiles[i]);
+    ASSERT_EQ((*get_cmd)->Files()[i], kFiles[i]);
   }
 }
 
@@ -239,10 +247,11 @@ TEST(CmdParseTest, CreatePutCmdSingleFileReturnsSuccess) {
   auto put_cmd = tftp::client::PutCmd::Create(cmdline);
 
   ASSERT_TRUE(put_cmd);
-  ASSERT_TRUE(put_cmd->LocalFile().empty());
-  ASSERT_TRUE(put_cmd->RemoteFile().empty());
-  ASSERT_EQ(put_cmd->Files().size(), 1);
-  ASSERT_EQ(put_cmd->Files()[0], "foo");
+  ASSERT_TRUE(*put_cmd);
+  ASSERT_TRUE((*put_cmd)->LocalFile().empty());
+  ASSERT_TRUE((*put_cmd)->RemoteFile().empty());
+  ASSERT_EQ((*put_cmd)->Files().size(), 1);
+  ASSERT_EQ((*put_cmd)->Files()[0], "foo");
 }
 
 TEST(CmdParseTest, CreatePutCmdWithLocalAndRemoteFileReturnsSuccess) {
@@ -252,9 +261,10 @@ TEST(CmdParseTest, CreatePutCmdWithLocalAndRemoteFileReturnsSuccess) {
   auto put_cmd = tftp::client::PutCmd::Create(cmdline);
 
   ASSERT_TRUE(put_cmd);
-  ASSERT_EQ(put_cmd->LocalFile(), local_file);
-  ASSERT_EQ(put_cmd->RemoteFile(), remote_file);
-  ASSERT_TRUE(put_cmd->Files().empty());
+  ASSERT_TRUE(*put_cmd);
+  ASSERT_EQ((*put_cmd)->LocalFile(), local_file);
+  ASSERT_EQ((*put_cmd)->RemoteFile(), remote_file);
+  ASSERT_TRUE((*put_cmd)->Files().empty());
 }
 
 TEST(CmdParseTest, CreatePutCmdMultiFileAndRemoteDirReturnsSuccess) {
@@ -266,12 +276,13 @@ TEST(CmdParseTest, CreatePutCmdMultiFileAndRemoteDirReturnsSuccess) {
 
   auto put_cmd = tftp::client::PutCmd::Create(cmdline);
   ASSERT_TRUE(put_cmd);
-  ASSERT_TRUE(put_cmd->LocalFile().empty());
-  ASSERT_TRUE(put_cmd->RemoteFile().empty());
+  ASSERT_TRUE(*put_cmd);
+  ASSERT_TRUE((*put_cmd)->LocalFile().empty());
+  ASSERT_TRUE((*put_cmd)->RemoteFile().empty());
 
-  ASSERT_EQ(put_cmd->Files().size(), kFiles.size() - 1);
+  ASSERT_EQ((*put_cmd)->Files().size(), kFiles.size() - 1);
   for (std::size_t i = 0; i < (kFiles.size() - 1); ++i) {
-    ASSERT_EQ(put_cmd->Files()[i], kFiles[i]);
+    ASSERT_EQ((*put_cmd)->Files()[i], kFiles[i]);
   }
-  ASSERT_EQ(put_cmd->RemoteDir(), kFiles.back());
+  ASSERT_EQ((*put_cmd)->RemoteDir(), kFiles.back());
 }
