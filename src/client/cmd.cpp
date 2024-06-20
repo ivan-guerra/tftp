@@ -11,7 +11,6 @@
 #include <string_view>
 #include <vector>
 
-#include "client/config.h"
 #include "common/types.h"
 
 namespace tftp {
@@ -45,7 +44,7 @@ static std::expected<Seconds, ParseStatus> ParseTimeValue(
   return timeout_tmp;
 }
 
-ExecStatus ConnectCmd::Execute([[gnu::unused]] client::Config& config) {
+ExecStatus ConnectCmd::Execute([[gnu::unused]] ClientState& config) {
   return ExecStatus::kNotImplemented;
 }
 
@@ -73,7 +72,7 @@ std::expected<ConnectCmd, ParseStatus> ConnectCmd::Create(
   return ConnectCmd(args[1], port);
 }
 
-ExecStatus GetCmd::Execute([[gnu::unused]] client::Config& config) {
+ExecStatus GetCmd::Execute([[gnu::unused]] ClientState& config) {
   return ExecStatus::kNotImplemented;
 }
 
@@ -103,7 +102,7 @@ std::expected<GetCmd, ParseStatus> GetCmd::Create(std::string_view cmdline) {
   return GetCmd(remote_file, local_file, files);
 }
 
-ExecStatus PutCmd::Execute([[gnu::unused]] client::Config& config) {
+ExecStatus PutCmd::Execute([[gnu::unused]] ClientState& config) {
   return ExecStatus::kNotImplemented;
 }
 
@@ -135,7 +134,7 @@ std::expected<PutCmd, ParseStatus> PutCmd::Create(std::string_view cmdline) {
   return PutCmd(remote_file, local_file, remote_dir, files);
 }
 
-ExecStatus LiteralCmd::Execute([[gnu::unused]] client::Config& config) {
+ExecStatus LiteralCmd::Execute([[gnu::unused]] ClientState& config) {
   return ExecStatus::kNotImplemented;
 }
 
@@ -143,7 +142,7 @@ std::expected<LiteralCmd, ParseStatus> LiteralCmd::Create() {
   return LiteralCmd();
 }
 
-ExecStatus ModeCmd::Execute([[gnu::unused]] client::Config& config) {
+ExecStatus ModeCmd::Execute([[gnu::unused]] ClientState& config) {
   return ExecStatus::kNotImplemented;
 }
 
@@ -164,7 +163,7 @@ std::expected<ModeCmd, ParseStatus> ModeCmd::Create(std::string_view cmdline) {
   return ModeCmd(mode_lower);
 }
 
-ExecStatus StatusCmd::Execute([[gnu::unused]] client::Config& config) {
+ExecStatus StatusCmd::Execute([[gnu::unused]] ClientState& config) {
   return ExecStatus::kNotImplemented;
 }
 
@@ -172,7 +171,7 @@ std::expected<StatusCmd, ParseStatus> StatusCmd::Create() {
   return StatusCmd();
 }
 
-ExecStatus TimeoutCmd::Execute([[gnu::unused]] client::Config& config) {
+ExecStatus TimeoutCmd::Execute([[gnu::unused]] ClientState& config) {
   return ExecStatus::kNotImplemented;
 }
 
@@ -191,7 +190,7 @@ std::expected<TimeoutCmd, ParseStatus> TimeoutCmd::Create(
   return TimeoutCmd(*time_val);
 }
 
-ExecStatus RexmtCmd::Execute([[gnu::unused]] client::Config& config) {
+ExecStatus RexmtCmd::Execute([[gnu::unused]] ClientState& config) {
   return ExecStatus::kNotImplemented;
 }
 
@@ -210,13 +209,13 @@ std::expected<RexmtCmd, ParseStatus> RexmtCmd::Create(
   return RexmtCmd(*time_val);
 }
 
-ExecStatus QuitCmd::Execute([[gnu::unused]] client::Config& config) {
+ExecStatus QuitCmd::Execute([[gnu::unused]] ClientState& config) {
   return ExecStatus::kNotImplemented;
 }
 
 std::expected<QuitCmd, ParseStatus> QuitCmd::Create() { return QuitCmd(); }
 
-ExecStatus HelpCmd::Execute([[gnu::unused]] client::Config& config) {
+ExecStatus HelpCmd::Execute([[gnu::unused]] ClientState& config) {
   return ExecStatus::kNotImplemented;
 }
 

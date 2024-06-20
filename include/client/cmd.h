@@ -4,6 +4,8 @@
 #include <array>
 #include <cstdint>
 #include <expected>
+#include <map>
+#include <memory>
 #include <string>
 #include <string_view>
 #include <vector>
@@ -14,10 +16,15 @@
 namespace tftp {
 namespace client {
 
+class Cmd;
+struct CmdStatus;
+
 using Id = std::string;
 using Seconds = uint32_t;
 using File = std::string;
 using FileList = std::vector<File>;
+using CmdPtr = std::shared_ptr<Cmd>;
+using CmdStatusMap = std::map<int, CmdStatus>;
 
 namespace CmdId {
 constexpr Id kConnect = "connect";
@@ -46,13 +53,24 @@ enum class ExecStatus {
   kNotImplemented,
 };
 
+struct CmdStatus {
+  int id = 0;
+  double percent_complete = 0.0;
+  CmdPtr cmd = nullptr;
+};
+
+struct ClientState {
+  Config conf;
+  CmdStatusMap statuses;
+};
+
 constexpr std::array<const char*, ParseStatus::kStatusCount> kParseStatusToStr =
     {"success", "invalid number of arguments", "invalid port number",
      "invalid mode", "invalid timeout"};
 
 class Cmd {
  public:
-  virtual ExecStatus Execute([[gnu::unused]] client::Config& config) {
+  virtual ExecStatus Execute([[gnu::unused]] ClientState& config) {
     return ExecStatus::kNotImplemented;
   }
 
@@ -71,7 +89,7 @@ class GetCmd : public Cmd {
 
   virtual ~GetCmd() = default;
 
-  ExecStatus Execute(client::Config& config) final;
+  ExecStatus Execute(ClientState& config) final;
 
   const File& RemoteFile() const { return remote_file_; }
   const File& LocalFile() const { return local_file_; }
@@ -96,7 +114,7 @@ class PutCmd : public Cmd {
 
   virtual ~PutCmd() = default;
 
-  ExecStatus Execute(client::Config& config) final;
+  ExecStatus Execute(ClientState& config) final;
 
   const File& RemoteFile() const { return remote_file_; }
   const File& LocalFile() const { return local_file_; }
@@ -126,7 +144,7 @@ class ConnectCmd : public Cmd {
 
   virtual ~ConnectCmd() = default;
 
-  ExecStatus Execute(client::Config& config) final;
+  ExecStatus Execute(ClientState& config) final;
 
   std::string Host() const { return host_; }
   uint16_t Port() const { return port_; }
@@ -146,7 +164,7 @@ class LiteralCmd : public Cmd {
 
   virtual ~LiteralCmd() = default;
 
-  ExecStatus Execute(client::Config& config) final;
+  ExecStatus Execute(ClientState& config) final;
 
   bool LiteralMode() const { return literal_mode_; }
 
@@ -162,7 +180,7 @@ class ModeCmd : public Cmd {
 
   virtual ~ModeCmd() = default;
 
-  ExecStatus Execute(client::Config& config) final;
+  ExecStatus Execute(ClientState& config) final;
 
   const Mode& Mode() const { return mode_; }
 
@@ -179,7 +197,7 @@ class StatusCmd : public Cmd {
 
   virtual ~StatusCmd() = default;
 
-  ExecStatus Execute(client::Config& config) final;
+  ExecStatus Execute(ClientState& config) final;
 
  private:
   StatusCmd() : Cmd(CmdId::kStatus) {}
@@ -192,7 +210,7 @@ class TimeoutCmd : public Cmd {
 
   virtual ~TimeoutCmd() = default;
 
-  ExecStatus Execute(client::Config& config) final;
+  ExecStatus Execute(ClientState& config) final;
 
   Seconds Timeout() const { return timeout_; }
 
@@ -210,7 +228,7 @@ class RexmtCmd : public Cmd {
 
   virtual ~RexmtCmd() = default;
 
-  ExecStatus Execute(client::Config& config) final;
+  ExecStatus Execute(ClientState& config) final;
 
   Seconds RexmtTimeout() const { return rexmt_timeout_; }
 
@@ -228,7 +246,7 @@ class QuitCmd : public Cmd {
 
   virtual ~QuitCmd() = default;
 
-  ExecStatus Execute(client::Config& config) final;
+  ExecStatus Execute(ClientState& config) final;
 
  private:
   QuitCmd() : Cmd(CmdId::kQuit) {}
@@ -240,7 +258,7 @@ class HelpCmd : public Cmd {
 
   virtual ~HelpCmd() = default;
 
-  ExecStatus Execute(client::Config& config) final;
+  ExecStatus Execute(ClientState& config) final;
 
   const tftp::client::Id& TargetCmd() const { return target_cmd_; }
 
