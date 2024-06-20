@@ -5,6 +5,7 @@
 #include <expected>
 #include <map>
 #include <memory>
+#include <mutex>
 #include <string>
 #include <string_view>
 #include <vector>
@@ -24,7 +25,7 @@ using Seconds = uint32_t;
 using File = std::string;
 using FileList = std::vector<File>;
 using CmdPtr = std::shared_ptr<Cmd>;
-using CmdStatusMap = std::map<int, CmdStatus>;
+using ActiveCmds = std::map<int, CmdPtr>;
 
 template <typename T>
 using ExpectedCmd = std::expected<std::shared_ptr<T>, ParseStatus>;
@@ -56,15 +57,13 @@ enum class ExecStatus {
   kNotImplemented,
 };
 
-struct CmdStatus {
-  int id = 0;
-  double percent_complete = 0.0;
-  CmdPtr cmd = nullptr;
-};
-
 struct ClientState {
+  std::mutex state_mtx;
+  std::mutex io_mtx;
+
+  int cmd_total = 0;
   Config conf;
-  CmdStatusMap statuses;
+  ActiveCmds running;
 };
 
 constexpr std::array<const char*, ParseStatus::kStatusCount> kParseStatusToStr =
@@ -78,12 +77,14 @@ class Cmd {
   }
 
   const Id& Id() const { return id_; }
+  double PercentComplete() const { return percent_complete_; }
 
  protected:
   Cmd() = delete;
-  explicit Cmd(const tftp::client::Id& id) : id_(id) {}
+  explicit Cmd(const tftp::client::Id& id) : id_(id), percent_complete_(0.0) {}
 
   tftp::client::Id id_;
+  double percent_complete_;
 };
 
 class GetCmd : public Cmd {
