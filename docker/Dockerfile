@@ -12,7 +12,6 @@ FROM fedora:latest
 # Install all the packages needed to build the tftp client and server.
 RUN dnf groupinstall 'Development Tools' -y --nodocs && \
     dnf install -y --nodocs \
-        boost-devel \
         cmake \
         clang \
         ccache \

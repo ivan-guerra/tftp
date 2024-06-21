@@ -1,10 +1,7 @@
 #include "client/cmd_processor.h"
 
-#include <boost/asio/post.hpp>
 #include <expected>
-#include <functional>
 #include <iostream>
-#include <mutex>
 #include <sstream>
 
 #include "client/cmd.h"
@@ -14,12 +11,6 @@ namespace client {
 
 void CmdProcessor::PrintError(std::string_view err_msg) const {
   std::cout << "error: " << err_msg << std::endl;
-}
-
-void CmdProcessor::CmdExecutor(ClientStatePtr state, int cmd_num) {
-  std::unique_lock<std::mutex> lock(state->state_mtx);
-  state->done[cmd_num] = state->running[cmd_num]->Execute(state);
-  state->running.erase(cmd_num);
 }
 
 void CmdProcessor::Exec(std::string_view cmdline) {
@@ -60,12 +51,11 @@ void CmdProcessor::Exec(std::string_view cmdline) {
     return;
   }
 
-  /* Register a new command and launch an executor thread. */
-  std::unique_lock<std::mutex> lock(state_->state_mtx);
-  state_->cmd_total++;
-  state_->running[state_->cmd_total] = *cmd;
-  boost::asio::post(worker_thrds_, std::bind(&CmdProcessor::CmdExecutor, this,
-                                             state_, state_->cmd_total));
+  /* Execute the command. */
+  ExecStatus exec_stat = (*cmd)->Execute(conf_);
+  if (exec_stat != ExecStatus::kSuccessfulExec) {
+    PrintError(kExecStatusToStr[exec_stat]);
+  }
 }
 
 }  // namespace client

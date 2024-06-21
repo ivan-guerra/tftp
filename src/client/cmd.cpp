@@ -45,7 +45,7 @@ static std::expected<Seconds, ParseStatus> ParseTimeValue(
   return timeout_tmp;
 }
 
-ExecStatus ConnectCmd::Execute([[gnu::unused]] ClientStatePtr config) {
+ExecStatus ConnectCmd::Execute([[gnu::unused]] ConfigPtr config) {
   return ExecStatus::kNotImplemented;
 }
 
@@ -72,7 +72,7 @@ ExpectedCmd<ConnectCmd> ConnectCmd::Create(std::string_view cmdline) {
   return std::make_shared<ConnectCmd>(args[1], port);
 }
 
-ExecStatus GetCmd::Execute([[gnu::unused]] ClientStatePtr config) {
+ExecStatus GetCmd::Execute([[gnu::unused]] ConfigPtr config) {
   return ExecStatus::kNotImplemented;
 }
 
@@ -102,7 +102,7 @@ ExpectedCmd<GetCmd> GetCmd::Create(std::string_view cmdline) {
   return std::make_shared<GetCmd>(remote_file, local_file, files);
 }
 
-ExecStatus PutCmd::Execute([[gnu::unused]] ClientStatePtr config) {
+ExecStatus PutCmd::Execute([[gnu::unused]] ConfigPtr config) {
   return ExecStatus::kNotImplemented;
 }
 
@@ -134,7 +134,7 @@ ExpectedCmd<PutCmd> PutCmd::Create(std::string_view cmdline) {
   return std::make_shared<PutCmd>(remote_file, local_file, remote_dir, files);
 }
 
-ExecStatus LiteralCmd::Execute([[gnu::unused]] ClientStatePtr config) {
+ExecStatus LiteralCmd::Execute([[gnu::unused]] ConfigPtr config) {
   return ExecStatus::kNotImplemented;
 }
 
@@ -142,7 +142,7 @@ ExpectedCmd<LiteralCmd> LiteralCmd::Create() {
   return std::make_shared<LiteralCmd>();
 }
 
-ExecStatus ModeCmd::Execute([[gnu::unused]] ClientStatePtr config) {
+ExecStatus ModeCmd::Execute([[gnu::unused]] ConfigPtr config) {
   return ExecStatus::kNotImplemented;
 }
 
@@ -163,7 +163,7 @@ ExpectedCmd<ModeCmd> ModeCmd::Create(std::string_view cmdline) {
   return std::make_shared<ModeCmd>(mode_lower);
 }
 
-ExecStatus StatusCmd::Execute([[gnu::unused]] ClientStatePtr config) {
+ExecStatus StatusCmd::Execute([[gnu::unused]] ConfigPtr config) {
   return ExecStatus::kNotImplemented;
 }
 
@@ -171,7 +171,7 @@ ExpectedCmd<StatusCmd> StatusCmd::Create() {
   return std::make_shared<StatusCmd>();
 }
 
-ExecStatus TimeoutCmd::Execute([[gnu::unused]] ClientStatePtr config) {
+ExecStatus TimeoutCmd::Execute([[gnu::unused]] ConfigPtr config) {
   return ExecStatus::kNotImplemented;
 }
 
@@ -189,7 +189,7 @@ ExpectedCmd<TimeoutCmd> TimeoutCmd::Create(std::string_view cmdline) {
   return std::make_shared<TimeoutCmd>(*time_val);
 }
 
-ExecStatus RexmtCmd::Execute([[gnu::unused]] ClientStatePtr config) {
+ExecStatus RexmtCmd::Execute([[gnu::unused]] ConfigPtr config) {
   return ExecStatus::kNotImplemented;
 }
 
@@ -207,13 +207,13 @@ ExpectedCmd<RexmtCmd> RexmtCmd::Create(std::string_view cmdline) {
   return std::make_shared<RexmtCmd>(*time_val);
 }
 
-ExecStatus QuitCmd::Execute([[gnu::unused]] ClientStatePtr config) {
+ExecStatus QuitCmd::Execute([[gnu::unused]] ConfigPtr config) {
   return ExecStatus::kNotImplemented;
 }
 
 ExpectedCmd<QuitCmd> QuitCmd::Create() { return std::make_shared<QuitCmd>(); }
 
-ExecStatus HelpCmd::Execute([[gnu::unused]] ClientStatePtr config) {
+ExecStatus HelpCmd::Execute([[gnu::unused]] ConfigPtr config) {
   return ExecStatus::kNotImplemented;
 }
 
