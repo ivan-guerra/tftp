@@ -5,6 +5,7 @@
 #include <cstdint>
 #include <expected>
 #include <limits>
+#include <memory>
 #include <optional>
 #include <string>
 #include <string_view>
@@ -62,7 +63,7 @@ static std::expected<Config::PortRange, Config::ErrorCode> ParsePortRange(
   return port_range;
 }
 
-std::expected<Config, Config::ErrorCode> Config::Create(
+std::expected<ConfigPtr, Config::ErrorCode> Config::Create(
     std::string_view mode, std::string_view port_range, bool literal_mode,
     const HostName& host) {
   auto parsed_mode = ParseMode(mode);
@@ -75,7 +76,10 @@ std::expected<Config, Config::ErrorCode> Config::Create(
     return std::unexpected(parsed_range.error());
   }
 
-  return Config(*parsed_mode, *parsed_range, literal_mode, host);
+  /* Have to use a raw new here since std::make_shared<> cannot access the
+   * private Config constructor. */
+  return std::shared_ptr<Config>(
+      new Config(*parsed_mode, *parsed_range, literal_mode, host));
 }
 
 std::optional<Config::ErrorCode> Config::SetMode(std::string_view mode) {

@@ -4,6 +4,7 @@
 #include <array>
 #include <cstdint>
 #include <expected>
+#include <memory>
 #include <optional>
 #include <string_view>
 
@@ -11,6 +12,9 @@
 
 namespace tftp {
 namespace client {
+
+class Config;
+using ConfigPtr = std::shared_ptr<Config>;
 
 class Config {
  public:
@@ -36,10 +40,10 @@ class Config {
       "port range is out of order -> expected FIRST:LAST where FIRST <= LAST",
   };
 
-  static std::expected<Config, ErrorCode> Create(std::string_view mode,
-                                                 std::string_view port_range,
-                                                 bool literal_mode,
-                                                 const HostName& host);
+  static std::expected<ConfigPtr, ErrorCode> Create(std::string_view mode,
+                                                    std::string_view port_range,
+                                                    bool literal_mode,
+                                                    const HostName& host);
 
   const Mode& GetMode() const { return mode_; }
   PortRange GetPortRange() const { return ports_; }
