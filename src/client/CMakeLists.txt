@@ -1,5 +1,7 @@
 cmake_minimum_required(VERSION 3.28)
 
+find_package(Boost REQUIRED)
+
 project(
   client
   DESCRIPTION "TFTP Client"
@@ -7,8 +9,8 @@ project(
 
 add_library(${PROJECT_NAME} STATIC)
 
-target_sources(${PROJECT_NAME} PRIVATE config.cpp cmd.cpp)
+target_sources(${PROJECT_NAME} PRIVATE config.cpp cmd.cpp cmd_processor.cpp)
 
 target_include_directories(${PROJECT_NAME} PUBLIC ${TFTP_INCLUDE_DIR})
 
-target_link_libraries(${PROJECT_NAME} PUBLIC common)
+target_link_libraries(${PROJECT_NAME} PUBLIC common Boost::headers)
