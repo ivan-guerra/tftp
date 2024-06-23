@@ -34,7 +34,6 @@ constexpr Id kMode = "mode";
 constexpr Id kStatus = "status";
 constexpr Id kTimeout = "timeout";
 constexpr Id kRexmt = "rexmt";
-constexpr Id kQuit = "quit";
 constexpr Id kHelp = "?";
 }  // namespace CmdId
 
@@ -228,18 +227,6 @@ class RexmtCmd : public Cmd {
       : Cmd(CmdId::kRexmt), rexmt_timeout_(rexmt_timeout) {}
 
   Seconds rexmt_timeout_;
-};
-
-class QuitCmd : public Cmd {
- public:
-  static ExpectedCmd<QuitCmd> Create();
-
-  virtual ~QuitCmd() = default;
-
-  ExecStatus Execute(ConfigPtr config) final;
-
- private:
-  QuitCmd() : Cmd(CmdId::kQuit) {}
 };
 
 class HelpCmd : public Cmd {

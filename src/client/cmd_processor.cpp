@@ -29,8 +29,6 @@ void CmdProcessor::Exec(std::string_view cmdline) {
     cmd = LoadCmd<HelpCmd>(cmdline);
   } else if (cmd_id == CmdId::kMode) {
     cmd = LoadCmd<ModeCmd>(cmdline);
-  } else if (cmd_id == CmdId::kQuit) {
-    cmd = LoadCmd<QuitCmd>();
   } else if (cmd_id == CmdId::kStatus) {
     cmd = LoadCmd<StatusCmd>();
   } else if (cmd_id == CmdId::kConnect) {

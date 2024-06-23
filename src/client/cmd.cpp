@@ -208,14 +208,6 @@ ExpectedCmd<RexmtCmd> RexmtCmd::Create(std::string_view cmdline) {
   return std::shared_ptr<RexmtCmd>(new RexmtCmd(*time_val));
 }
 
-ExecStatus QuitCmd::Execute([[gnu::unused]] ConfigPtr config) {
-  return ExecStatus::kNotImplemented;
-}
-
-ExpectedCmd<QuitCmd> QuitCmd::Create() {
-  return std::shared_ptr<QuitCmd>(new QuitCmd());
-}
-
 ExecStatus HelpCmd::Execute([[gnu::unused]] ConfigPtr config) {
   return ExecStatus::kNotImplemented;
 }
