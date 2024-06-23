@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 3.28)
 
-project(tftp DESCRIPTION "A Linux TFTP Client")
+project(tftpc DESCRIPTION "A Linux TFTP Client")
 
 set(TFTP_INCLUDE_DIR
     "${CMAKE_SOURCE_DIR}/include"
