@@ -79,13 +79,6 @@ class GetCmd : public Cmd {
  public:
   static ExpectedCmd<GetCmd> Create(std::string_view cmdline);
 
-  GetCmd() = delete;
-  GetCmd(const File& remote_file, const File& local_file, const FileList& files)
-      : Cmd(CmdId::kGet),
-        remote_file_(remote_file),
-        local_file_(local_file),
-        files_(files) {}
-
   virtual ~GetCmd() = default;
 
   ExecStatus Execute(ConfigPtr config) final;
@@ -95,6 +88,13 @@ class GetCmd : public Cmd {
   const FileList& Files() const { return files_; }
 
  private:
+  GetCmd() = delete;
+  GetCmd(const File& remote_file, const File& local_file, const FileList& files)
+      : Cmd(CmdId::kGet),
+        remote_file_(remote_file),
+        local_file_(local_file),
+        files_(files) {}
+
   File remote_file_;
   File local_file_;
   FileList files_;
@@ -103,15 +103,6 @@ class GetCmd : public Cmd {
 class PutCmd : public Cmd {
  public:
   static ExpectedCmd<PutCmd> Create(std::string_view cmdline);
-
-  PutCmd() = delete;
-  PutCmd(const File& remote_file, const File& local_file,
-         const File& remote_dir, const FileList& files)
-      : Cmd(CmdId::kPut),
-        remote_file_(remote_file),
-        local_file_(local_file),
-        remote_dir_(remote_dir),
-        files_(files) {}
 
   virtual ~PutCmd() = default;
 
@@ -123,6 +114,15 @@ class PutCmd : public Cmd {
   const FileList& Files() const { return files_; }
 
  private:
+  PutCmd() = delete;
+  PutCmd(const File& remote_file, const File& local_file,
+         const File& remote_dir, const FileList& files)
+      : Cmd(CmdId::kPut),
+        remote_file_(remote_file),
+        local_file_(local_file),
+        remote_dir_(remote_dir),
+        files_(files) {}
+
   File remote_file_;
   File local_file_;
   File remote_dir_;
@@ -133,10 +133,6 @@ class ConnectCmd : public Cmd {
  public:
   static ExpectedCmd<ConnectCmd> Create(std::string_view cmdline);
 
-  ConnectCmd() = delete;
-  ConnectCmd(const HostName& host, uint16_t port)
-      : Cmd(CmdId::kConnect), host_(host), port_(port) {}
-
   virtual ~ConnectCmd() = default;
 
   ExecStatus Execute(ConfigPtr config) final;
@@ -145,6 +141,10 @@ class ConnectCmd : public Cmd {
   uint16_t Port() const { return port_; }
 
  private:
+  ConnectCmd() = delete;
+  ConnectCmd(const HostName& host, uint16_t port)
+      : Cmd(CmdId::kConnect), host_(host), port_(port) {}
+
   std::string host_;
   uint16_t port_ = 0;
 };
@@ -153,8 +153,6 @@ class LiteralCmd : public Cmd {
  public:
   static ExpectedCmd<LiteralCmd> Create();
 
-  LiteralCmd() : Cmd(CmdId::kLiteral), literal_mode_(false) {}
-
   virtual ~LiteralCmd() = default;
 
   ExecStatus Execute(ConfigPtr config) final;
@@ -162,15 +160,14 @@ class LiteralCmd : public Cmd {
   bool LiteralMode() const { return literal_mode_; }
 
  private:
+  LiteralCmd() : Cmd(CmdId::kLiteral), literal_mode_(false) {}
+
   bool literal_mode_;
 };
 
 class ModeCmd : public Cmd {
  public:
   static ExpectedCmd<ModeCmd> Create(std::string_view cmdline);
-
-  ModeCmd() = delete;
-  explicit ModeCmd(const tftp::Mode mode) : Cmd(CmdId::kMode), mode_(mode) {}
 
   virtual ~ModeCmd() = default;
 
@@ -179,6 +176,9 @@ class ModeCmd : public Cmd {
   const Mode& Mode() const { return mode_; }
 
  private:
+  ModeCmd() = delete;
+  explicit ModeCmd(const tftp::Mode mode) : Cmd(CmdId::kMode), mode_(mode) {}
+
   tftp::Mode mode_;
 };
 
@@ -186,22 +186,17 @@ class StatusCmd : public Cmd {
  public:
   static ExpectedCmd<StatusCmd> Create();
 
-  StatusCmd() : Cmd(CmdId::kStatus) {}
-
   virtual ~StatusCmd() = default;
 
   ExecStatus Execute(ConfigPtr config) final;
 
  private:
+  StatusCmd() : Cmd(CmdId::kStatus) {}
 };
 
 class TimeoutCmd : public Cmd {
  public:
   static ExpectedCmd<TimeoutCmd> Create(std::string_view cmdline);
-
-  TimeoutCmd() = delete;
-  explicit TimeoutCmd(Seconds timeout)
-      : Cmd(CmdId::kTimeout), timeout_(timeout) {}
 
   virtual ~TimeoutCmd() = default;
 
@@ -210,16 +205,16 @@ class TimeoutCmd : public Cmd {
   Seconds Timeout() const { return timeout_; }
 
  private:
+  TimeoutCmd() = delete;
+  explicit TimeoutCmd(Seconds timeout)
+      : Cmd(CmdId::kTimeout), timeout_(timeout) {}
+
   Seconds timeout_;
 };
 
 class RexmtCmd : public Cmd {
  public:
   static ExpectedCmd<RexmtCmd> Create(std::string_view cmdline);
-
-  RexmtCmd() = delete;
-  explicit RexmtCmd(Seconds rexmt_timeout)
-      : Cmd(CmdId::kRexmt), rexmt_timeout_(rexmt_timeout) {}
 
   virtual ~RexmtCmd() = default;
 
@@ -228,6 +223,10 @@ class RexmtCmd : public Cmd {
   Seconds RexmtTimeout() const { return rexmt_timeout_; }
 
  private:
+  RexmtCmd() = delete;
+  explicit RexmtCmd(Seconds rexmt_timeout)
+      : Cmd(CmdId::kRexmt), rexmt_timeout_(rexmt_timeout) {}
+
   Seconds rexmt_timeout_;
 };
 
@@ -235,22 +234,17 @@ class QuitCmd : public Cmd {
  public:
   static ExpectedCmd<QuitCmd> Create();
 
-  QuitCmd() : Cmd(CmdId::kQuit) {}
-
   virtual ~QuitCmd() = default;
 
   ExecStatus Execute(ConfigPtr config) final;
 
  private:
+  QuitCmd() : Cmd(CmdId::kQuit) {}
 };
 
 class HelpCmd : public Cmd {
  public:
   static ExpectedCmd<HelpCmd> Create(std::string_view cmdline);
-
-  HelpCmd() = delete;
-  explicit HelpCmd(const tftp::client::Id& target_cmd)
-      : Cmd(CmdId::kHelp), target_cmd_(target_cmd) {}
 
   virtual ~HelpCmd() = default;
 
@@ -259,6 +253,10 @@ class HelpCmd : public Cmd {
   const tftp::client::Id& TargetCmd() const { return target_cmd_; }
 
  private:
+  HelpCmd() = delete;
+  explicit HelpCmd(const tftp::client::Id& target_cmd)
+      : Cmd(CmdId::kHelp), target_cmd_(target_cmd) {}
+
   tftp::client::Id target_cmd_;
 };
 

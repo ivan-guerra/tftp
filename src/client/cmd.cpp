@@ -69,7 +69,7 @@ ExpectedCmd<ConnectCmd> ConnectCmd::Create(std::string_view cmdline) {
     port = static_cast<uint16_t>(port_tmp);
   }
 
-  return std::make_shared<ConnectCmd>(args[1], port);
+  return std::shared_ptr<ConnectCmd>(new ConnectCmd(args[1], port));
 }
 
 ExecStatus GetCmd::Execute([[gnu::unused]] ConfigPtr config) {
@@ -99,7 +99,7 @@ ExpectedCmd<GetCmd> GetCmd::Create(std::string_view cmdline) {
     files = args;
   }
 
-  return std::make_shared<GetCmd>(remote_file, local_file, files);
+  return std::shared_ptr<GetCmd>(new GetCmd(remote_file, local_file, files));
 }
 
 ExecStatus PutCmd::Execute([[gnu::unused]] ConfigPtr config) {
@@ -131,7 +131,8 @@ ExpectedCmd<PutCmd> PutCmd::Create(std::string_view cmdline) {
     files = FileList(args.cbegin(), args.cbegin() + args.size() - 1);
   }
 
-  return std::make_shared<PutCmd>(remote_file, local_file, remote_dir, files);
+  return std::shared_ptr<PutCmd>(
+      new PutCmd(remote_file, local_file, remote_dir, files));
 }
 
 ExecStatus LiteralCmd::Execute([[gnu::unused]] ConfigPtr config) {
@@ -139,7 +140,7 @@ ExecStatus LiteralCmd::Execute([[gnu::unused]] ConfigPtr config) {
 }
 
 ExpectedCmd<LiteralCmd> LiteralCmd::Create() {
-  return std::make_shared<LiteralCmd>();
+  return std::shared_ptr<LiteralCmd>(new LiteralCmd());
 }
 
 ExecStatus ModeCmd::Execute([[gnu::unused]] ConfigPtr config) {
@@ -160,7 +161,7 @@ ExpectedCmd<ModeCmd> ModeCmd::Create(std::string_view cmdline) {
     return std::unexpected(ParseStatus::kInvalidMode);
   }
 
-  return std::make_shared<ModeCmd>(mode_lower);
+  return std::shared_ptr<ModeCmd>(new ModeCmd(mode_lower));
 }
 
 ExecStatus StatusCmd::Execute([[gnu::unused]] ConfigPtr config) {
@@ -168,7 +169,7 @@ ExecStatus StatusCmd::Execute([[gnu::unused]] ConfigPtr config) {
 }
 
 ExpectedCmd<StatusCmd> StatusCmd::Create() {
-  return std::make_shared<StatusCmd>();
+  return std::shared_ptr<StatusCmd>(new StatusCmd());
 }
 
 ExecStatus TimeoutCmd::Execute([[gnu::unused]] ConfigPtr config) {
@@ -186,7 +187,7 @@ ExpectedCmd<TimeoutCmd> TimeoutCmd::Create(std::string_view cmdline) {
     return std::unexpected(time_val.error());
   }
 
-  return std::make_shared<TimeoutCmd>(*time_val);
+  return std::shared_ptr<TimeoutCmd>(new TimeoutCmd(*time_val));
 }
 
 ExecStatus RexmtCmd::Execute([[gnu::unused]] ConfigPtr config) {
@@ -204,14 +205,16 @@ ExpectedCmd<RexmtCmd> RexmtCmd::Create(std::string_view cmdline) {
     return std::unexpected(time_val.error());
   }
 
-  return std::make_shared<RexmtCmd>(*time_val);
+  return std::shared_ptr<RexmtCmd>(new RexmtCmd(*time_val));
 }
 
 ExecStatus QuitCmd::Execute([[gnu::unused]] ConfigPtr config) {
   return ExecStatus::kNotImplemented;
 }
 
-ExpectedCmd<QuitCmd> QuitCmd::Create() { return std::make_shared<QuitCmd>(); }
+ExpectedCmd<QuitCmd> QuitCmd::Create() {
+  return std::shared_ptr<QuitCmd>(new QuitCmd());
+}
 
 ExecStatus HelpCmd::Execute([[gnu::unused]] ConfigPtr config) {
   return ExecStatus::kNotImplemented;
@@ -223,7 +226,7 @@ ExpectedCmd<HelpCmd> HelpCmd::Create(std::string_view cmdline) {
     return std::unexpected(ParseStatus::kInvalidNumArgs);
   }
 
-  return std::make_shared<HelpCmd>(args[1]);
+  return std::shared_ptr<HelpCmd>(new HelpCmd(args[1]));
 }
 
 }  // namespace client
