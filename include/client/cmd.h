@@ -39,6 +39,7 @@ constexpr Id kHelp = "?";
 
 enum ParseStatus : int {
   kSuccessfulParse = 0,
+  kUnknownCmd,
   kInvalidNumArgs,
   kInvalidPortNum,
   kInvalidMode,
@@ -53,8 +54,11 @@ enum ExecStatus : int {
 };
 
 constexpr std::array<const char*, ParseStatus::kParseStatusCnt>
-    kParseStatusToStr = {"success", "invalid number of arguments",
-                         "invalid port number", "invalid mode",
+    kParseStatusToStr = {"success",
+                         "unknown command",
+                         "invalid number of arguments",
+                         "invalid port number",
+                         "invalid mode",
                          "invalid timeout"};
 constexpr std::array<const char*, ExecStatus::kExecStatusCnt> kExecStatusToStr =
     {"success", "command not implemented"};

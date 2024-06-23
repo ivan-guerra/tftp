@@ -21,12 +21,13 @@ class CmdProcessor {
   CmdProcessor& operator=(const CmdProcessor&) = delete;
   CmdProcessor& operator=(CmdProcessor&&) = delete;
 
-  void Exec(std::string_view cmdline);
+  void Run();
 
  private:
   template <typename T>
-  std::expected<CmdPtr, ParseStatus> LoadCmd() const;
+  std::expected<CmdPtr, ParseStatus> CreateCmd() const;
   template <typename T>
+  std::expected<CmdPtr, ParseStatus> CreateCmd(std::string_view cmdline) const;
   std::expected<CmdPtr, ParseStatus> LoadCmd(std::string_view cmdline) const;
 
   void PrintError(std::string_view err_msg) const;
@@ -35,12 +36,12 @@ class CmdProcessor {
 };
 
 template <typename T>
-std::expected<CmdPtr, ParseStatus> CmdProcessor::LoadCmd() const {
+std::expected<CmdPtr, ParseStatus> CmdProcessor::CreateCmd() const {
   return T::Create();
 }
 
 template <typename T>
-std::expected<CmdPtr, ParseStatus> CmdProcessor::LoadCmd(
+std::expected<CmdPtr, ParseStatus> CmdProcessor::CreateCmd(
     std::string_view cmdline) const {
   return T::Create(cmdline);
 }

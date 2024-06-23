@@ -3,6 +3,8 @@
 #include <expected>
 #include <iostream>
 #include <sstream>
+#include <string>
+#include <string_view>
 
 #include "client/cmd.h"
 
@@ -13,7 +15,8 @@ void CmdProcessor::PrintError(std::string_view err_msg) const {
   std::cout << "error: " << err_msg << std::endl;
 }
 
-void CmdProcessor::Exec(std::string_view cmdline) {
+std::expected<CmdPtr, ParseStatus> CmdProcessor::LoadCmd(
+    std::string_view cmdline) const {
   /* Parse the command ID from the command line. */
   std::istringstream is(cmdline.data());
   Id cmd_id;
@@ -22,37 +25,49 @@ void CmdProcessor::Exec(std::string_view cmdline) {
   /* Create the command object. */
   std::expected<CmdPtr, ParseStatus> cmd;
   if (cmd_id == CmdId::kGet) {
-    cmd = LoadCmd<GetCmd>(cmdline);
+    cmd = CreateCmd<GetCmd>(cmdline);
   } else if (cmd_id == CmdId::kPut) {
-    cmd = LoadCmd<PutCmd>(cmdline);
+    cmd = CreateCmd<PutCmd>(cmdline);
   } else if (cmd_id == CmdId::kHelp) {
-    cmd = LoadCmd<HelpCmd>(cmdline);
+    cmd = CreateCmd<HelpCmd>(cmdline);
   } else if (cmd_id == CmdId::kMode) {
-    cmd = LoadCmd<ModeCmd>(cmdline);
+    cmd = CreateCmd<ModeCmd>(cmdline);
   } else if (cmd_id == CmdId::kStatus) {
-    cmd = LoadCmd<StatusCmd>();
+    cmd = CreateCmd<StatusCmd>();
   } else if (cmd_id == CmdId::kConnect) {
-    cmd = LoadCmd<ConnectCmd>(cmdline);
+    cmd = CreateCmd<ConnectCmd>(cmdline);
   } else if (cmd_id == CmdId::kLiteral) {
-    cmd = LoadCmd<LiteralCmd>();
+    cmd = CreateCmd<LiteralCmd>();
   } else if (cmd_id == CmdId::kTimeout) {
-    cmd = LoadCmd<TimeoutCmd>(cmdline);
+    cmd = CreateCmd<TimeoutCmd>(cmdline);
   } else if (cmd_id == CmdId::kRexmt) {
-    cmd = LoadCmd<RexmtCmd>(cmdline);
+    cmd = CreateCmd<RexmtCmd>(cmdline);
   } else {
-    PrintError("unknown command '" + cmd_id + "'");
-    return;
+    return std::unexpected(ParseStatus::kUnknownCmd);
   }
+  return cmd;
+}
 
-  if (!cmd) { /* Unable to parse the commandline successfully. */
-    PrintError(kParseStatusToStr[cmd.error()]);
-    return;
-  }
+void CmdProcessor::Run() {
+  static const char *kPrompt = "tftp> ";
+  std::cout << kPrompt;
 
-  /* Execute the command. */
-  ExecStatus exec_stat = (*cmd)->Execute(conf_);
-  if (exec_stat != ExecStatus::kSuccessfulExec) {
-    PrintError(kExecStatusToStr[exec_stat]);
+  std::string line;
+  while (std::getline(std::cin, line)) {
+    if (line == "quit") {
+      break;
+    }
+
+    auto cmd = LoadCmd(line);
+    if (!cmd) { /* Unable to parse the commandline successfully. */
+      PrintError(kParseStatusToStr[cmd.error()]);
+    } else { /* Got a valid command, execute it. */
+      ExecStatus exec_stat = (*cmd)->Execute(conf_);
+      if (exec_stat != ExecStatus::kSuccessfulExec) {
+        PrintError(kExecStatusToStr[exec_stat]);
+      }
+    }
+    std::cout << kPrompt;
   }
 }
 
