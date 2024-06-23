@@ -1,13 +1,11 @@
 #ifndef CONFIG_H_
 #define CONFIG_H_
 
-#include <array>
-#include <cstdint>
 #include <expected>
 #include <memory>
-#include <optional>
 #include <string_view>
 
+#include "common/parse.h"
 #include "common/types.h"
 
 namespace tftp {
@@ -18,56 +16,43 @@ using ConfigPtr = std::shared_ptr<Config>;
 
 class Config {
  public:
-  enum ErrorCode {
-    kUnknownMode = 0,
-    kMissingRangeSeperator,
-    kPortNumOutOfRange,
-    kPortNumIsNotUint16,
-    kPortNumOutOfOrder,
-    kNumCodes,
-  };
-
-  struct PortRange {
-    uint16_t start = 0;
-    uint16_t end = 0;
-  };
-
-  static constexpr std::array<const char*, ErrorCode::kNumCodes> kRetCodeToStr{
-      "unknown mode -> expected 'ascii'/'netascii' or 'binary'/'octet'",
-      "missing range seperator -> expected ':' between port numbers",
-      "port number is out of range -> expected [0, 65535]",
-      "specified port is not numeric -> expected uint16",
-      "port range is out of order -> expected FIRST:LAST where FIRST <= LAST",
-  };
-
-  static std::expected<ConfigPtr, ErrorCode> Create(std::string_view mode,
-                                                    std::string_view port_range,
-                                                    bool literal_mode,
-                                                    const HostName& host);
+  static std::expected<ConfigPtr, ParseStatus> Create(
+      std::string_view mode, std::string_view port_range, bool literal_mode,
+      const Hostname& hostname, std::string_view timeout,
+      std::string_view rexmt_timeout);
 
   const Mode& GetMode() const { return mode_; }
   PortRange GetPortRange() const { return ports_; }
   bool GetLiteralMode() const { return literal_mode_; }
-  const HostName& GetHost() const { return host_; }
+  const Hostname& GetHostname() const { return hostname_; }
+  Seconds GetTimeout() const { return timeout_; }
+  Seconds GetRexmtTimeout() const { return rexmt_timeout_; }
 
-  std::optional<Config::ErrorCode> SetMode(std::string_view mode);
-  std::optional<Config::ErrorCode> SetPortRange(std::string_view port_range);
+  std::optional<ParseStatus> SetMode(std::string_view mode);
+  std::optional<ParseStatus> SetPortRange(std::string_view port_range);
   void SetLiteralMode(bool literal_mode) { literal_mode_ = literal_mode; }
-  void SetHost(const HostName& host) { host_ = host; }
+  void SetHostname(const Hostname& hostname) { hostname_ = hostname; }
+  std::optional<ParseStatus> SetTimeout(std::string_view timeout);
+  std::optional<ParseStatus> SetRexmtTimeout(std::string_view rexmt_timeout);
 
  private:
   Config() = delete;
   Config(const tftp::Mode& mode, const struct PortRange& port_range,
-         bool literal_mode, const HostName& host)
+         bool literal_mode, const Hostname& hostname, Seconds timeout,
+         Seconds rexmt_timeout)
       : mode_(mode),
         ports_(port_range),
         literal_mode_(literal_mode),
-        host_(host) {}
+        hostname_(hostname),
+        timeout_(timeout),
+        rexmt_timeout_(rexmt_timeout) {}
 
   tftp::Mode mode_;
   struct PortRange ports_;
   bool literal_mode_ = false;
-  HostName host_;
+  Hostname hostname_;
+  Seconds timeout_;
+  Seconds rexmt_timeout_;
 };
 
 }  // namespace client

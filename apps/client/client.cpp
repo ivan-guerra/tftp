@@ -8,6 +8,7 @@
 
 #include "client/cmd_processor.h"
 #include "client/config.h"
+#include "common/parse.h"
 
 static void PrintErrAndExit(std::string_view err_msg) {
   std::cerr << "error: " << err_msg << std::endl;
@@ -29,18 +30,25 @@ static void PrintUsage() {
                "client can use "
                "for tx/rx, must be in the\n\t\tformat <START_PORT>:<END_PORT>"
             << std::endl;
+  std::cout << "\t-t, --timeout TOTAL_TRANS_TIMEOUT\n\t\ttotal transmission "
+               "time in seconds"
+            << std::endl;
+  std::cout << "\t-r, --rexmt-timeout REXMT_TIMEOUT\n\t\tper packet "
+               "retransmission time in seconds"
+            << std::endl;
   std::cout << "\t-l, --literal-mode\n\t\tinterpret the ':' character literally"
             << std::endl;
   std::cout << "\t-h, --help\n\t\tprint this help message" << std::endl;
 }
 
 int main(int argc, char** argv) {
-  /* TODO: Add args for timeout and retxmt timeout. */
   const std::vector<struct option> kLongOpts{
       {"hostname", required_argument, 0, 'n'},
       {"mode", required_argument, 0, 'm'},
       {"port", required_argument, 0, 'p'},
       {"port-range", required_argument, 0, 'R'},
+      {"timeout", required_argument, 0, 't'},
+      {"rexmt-timeout", required_argument, 0, 'r'},
       {"literal-mode", no_argument, 0, 'l'},
       {"help", no_argument, 0, 'h'},
       {0, 0, 0, 0},
@@ -49,11 +57,13 @@ int main(int argc, char** argv) {
   std::string hostname = "localhost";
   std::string mode = "ascii";
   std::string port_range = "2048:65535";
+  std::string timeout = "60";
+  std::string rexmt_timeout = "10";
   bool literal_mode = false;
 
   int opt = 0;
   int long_index = 0;
-  while ((opt = ::getopt_long(argc, argv, "n:m:p:R:lh", &kLongOpts[0],
+  while ((opt = ::getopt_long(argc, argv, "n:m:p:R:t:r:lh", &kLongOpts[0],
                               &long_index)) != -1) {
     switch (opt) {
       case 'n':
@@ -68,6 +78,12 @@ int main(int argc, char** argv) {
       case 'R':
         port_range = optarg;
         break;
+      case 't':
+        timeout = optarg;
+        break;
+      case 'r':
+        rexmt_timeout = optarg;
+        break;
       case 'l':
         literal_mode = true;
         break;
@@ -81,10 +97,10 @@ int main(int argc, char** argv) {
     }
   }
 
-  auto config =
-      tftp::client::Config::Create(mode, port_range, literal_mode, hostname);
+  auto config = tftp::client::Config::Create(mode, port_range, literal_mode,
+                                             hostname, timeout, rexmt_timeout);
   if (!config) {
-    PrintErrAndExit(tftp::client::Config::kRetCodeToStr[config.error()]);
+    PrintErrAndExit(tftp::kParseStatusToStr[config.error()]);
   }
 
   tftp::client::CmdProcessor processor(*config);

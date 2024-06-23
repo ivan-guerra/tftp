@@ -9,16 +9,15 @@
 #include <vector>
 
 #include "client/config.h"
+#include "common/parse.h"
 #include "common/types.h"
 
 namespace tftp {
 namespace client {
 
 class Cmd;
-enum ParseStatus : int;
 
 using Id = std::string;
-using Seconds = uint32_t;
 using File = std::string;
 using FileList = std::vector<File>;
 using CmdPtr = std::shared_ptr<Cmd>;
@@ -37,29 +36,12 @@ constexpr Id kRexmt = "rexmt";
 constexpr Id kHelp = "?";
 }  // namespace CmdId
 
-enum ParseStatus : int {
-  kSuccessfulParse = 0,
-  kUnknownCmd,
-  kInvalidNumArgs,
-  kInvalidPortNum,
-  kInvalidMode,
-  kInvalidTimeout,
-  kParseStatusCnt,
-};
-
 enum ExecStatus : int {
   kSuccessfulExec = 0,
   kNotImplemented,
   kExecStatusCnt,
 };
 
-constexpr std::array<const char*, ParseStatus::kParseStatusCnt>
-    kParseStatusToStr = {"success",
-                         "unknown command",
-                         "invalid number of arguments",
-                         "invalid port number",
-                         "invalid mode",
-                         "invalid timeout"};
 constexpr std::array<const char*, ExecStatus::kExecStatusCnt> kExecStatusToStr =
     {"success", "command not implemented"};
 
@@ -145,7 +127,7 @@ class ConnectCmd : public Cmd {
 
  private:
   ConnectCmd() = delete;
-  ConnectCmd(const HostName& host, uint16_t port)
+  ConnectCmd(const Hostname& host, uint16_t port)
       : Cmd(CmdId::kConnect), host_(host), port_(port) {}
 
   std::string host_;

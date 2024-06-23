@@ -7,6 +7,6 @@ project(
 
 add_library(${PROJECT_NAME} STATIC)
 
-target_sources(${PROJECT_NAME} PRIVATE pack.cpp udp_socket.cpp)
+target_sources(${PROJECT_NAME} PRIVATE pack.cpp parse.cpp udp_socket.cpp)
 
 target_include_directories(${PROJECT_NAME} PUBLIC ${TFTP_INCLUDE_DIR})

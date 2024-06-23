@@ -1,71 +1,21 @@
 #include "client/config.h"
 
-#include <algorithm>
 #include <cctype>
-#include <cstdint>
 #include <expected>
-#include <limits>
 #include <memory>
 #include <optional>
-#include <string>
 #include <string_view>
 
+#include "common/parse.h"
 #include "common/types.h"
 
 namespace tftp {
 namespace client {
 
-static std::expected<tftp::Mode, Config::ErrorCode> ParseMode(
-    std::string_view mode) {
-  std::string mode_lower(mode.size(), 0);
-  std::transform(mode.cbegin(), mode.cend(), mode_lower.begin(),
-                 [](unsigned char c) { return std::tolower(c); });
-  if (mode_lower == "ascii" || mode_lower == "netascii") {
-    return tftp::SendMode::kNetAscii;
-  } else if (mode_lower == "binary" || mode_lower == "octet") {
-    return tftp::SendMode::kOctet;
-  } else {
-    return std::unexpected(Config::ErrorCode::kUnknownMode);
-  }
-}
-
-static std::expected<Config::PortRange, Config::ErrorCode> ParsePortRange(
-    std::string_view range) {
-  auto IsPositiveNum = [](std::string_view val) {
-    return std::all_of(val.cbegin(), val.cend(),
-                       [](char c) { return std::isdigit(c); });
-  };
-
-  std::size_t seperator = range.find(':');
-  if (seperator == std::string::npos) {
-    return std::unexpected(Config::ErrorCode::kMissingRangeSeperator);
-  }
-
-  std::string_view start_str = range.substr(0, seperator);
-  std::string_view end_str = range.substr(seperator + 1);
-  if (!IsPositiveNum(start_str) || !IsPositiveNum(end_str)) {
-    return std::unexpected(Config::ErrorCode::kPortNumIsNotUint16);
-  }
-
-  uint64_t start = std::stoull(start_str.data());
-  uint64_t end = std::stoull(end_str.data());
-  uint16_t max = std::numeric_limits<uint16_t>::max();
-  if ((start > max) || (end > max)) {
-    return std::unexpected(Config::ErrorCode::kPortNumOutOfRange);
-  }
-
-  if (start > end) {
-    return std::unexpected(Config::ErrorCode::kPortNumOutOfOrder);
-  }
-
-  Config::PortRange port_range = {.start = static_cast<uint16_t>(start),
-                                  .end = static_cast<uint16_t>(end)};
-  return port_range;
-}
-
-std::expected<ConfigPtr, Config::ErrorCode> Config::Create(
+std::expected<ConfigPtr, ParseStatus> Config::Create(
     std::string_view mode, std::string_view port_range, bool literal_mode,
-    const HostName& host) {
+    const Hostname& hostname, std::string_view timeout,
+    std::string_view rexmt_timeout) {
   auto parsed_mode = ParseMode(mode);
   if (!parsed_mode) {
     return std::unexpected(parsed_mode.error());
@@ -76,13 +26,23 @@ std::expected<ConfigPtr, Config::ErrorCode> Config::Create(
     return std::unexpected(parsed_range.error());
   }
 
+  auto parsed_timeout = ParseTimeValue(timeout);
+  if (!parsed_timeout) {
+    return std::unexpected(parsed_timeout.error());
+  }
+  auto parsed_rexmt_timeout = ParseTimeValue(rexmt_timeout);
+  if (!parsed_rexmt_timeout) {
+    return std::unexpected(parsed_rexmt_timeout.error());
+  }
+
   /* Have to use a raw new here since std::make_shared<> cannot access the
    * private Config constructor. */
   return std::shared_ptr<Config>(
-      new Config(*parsed_mode, *parsed_range, literal_mode, host));
+      new Config(*parsed_mode, *parsed_range, literal_mode, hostname,
+                 *parsed_timeout, *parsed_rexmt_timeout));
 }
 
-std::optional<Config::ErrorCode> Config::SetMode(std::string_view mode) {
+std::optional<ParseStatus> Config::SetMode(std::string_view mode) {
   auto parsed_mode = ParseMode(mode);
   if (!parsed_mode) {
     return parsed_mode.error();
@@ -93,14 +53,36 @@ std::optional<Config::ErrorCode> Config::SetMode(std::string_view mode) {
   return std::nullopt;
 }
 
-std::optional<Config::ErrorCode> Config::SetPortRange(
-    std::string_view port_range) {
+std::optional<ParseStatus> Config::SetPortRange(std::string_view port_range) {
   auto parsed_range = ParsePortRange(port_range);
   if (!parsed_range) {
     return parsed_range.error();
   }
 
   ports_ = *parsed_range;
+
+  return std::nullopt;
+}
+
+std::optional<ParseStatus> Config::SetTimeout(std::string_view timeout) {
+  auto parsed_timeout = ParseTimeValue(timeout);
+  if (!parsed_timeout) {
+    return parsed_timeout.error();
+  }
+
+  timeout_ = *parsed_timeout;
+
+  return std::nullopt;
+}
+
+std::optional<ParseStatus> Config::SetRexmtTimeout(
+    std::string_view rexmt_timeout) {
+  auto parsed_rexmt_timeout = ParseTimeValue(rexmt_timeout);
+  if (!parsed_rexmt_timeout) {
+    return parsed_rexmt_timeout.error();
+  }
+
+  rexmt_timeout_ = *parsed_rexmt_timeout;
 
   return std::nullopt;
 }

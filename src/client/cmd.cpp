@@ -1,17 +1,15 @@
 #include "client/cmd.h"
 
-#include <algorithm>
-#include <cctype>
 #include <cstdint>
 #include <expected>
 #include <iterator>
-#include <limits>
 #include <memory>
 #include <sstream>
 #include <string>
 #include <string_view>
 #include <vector>
 
+#include "common/parse.h"
 #include "common/types.h"
 
 namespace tftp {
@@ -26,25 +24,6 @@ static TokenList Tokenize(std::string_view cmdline) {
   return {std::istream_iterator<Token>(buffer), {}};
 }
 
-static bool IsPositiveNum(std::string_view val) {
-  return std::all_of(val.cbegin(), val.cend(),
-                     [](char c) { return std::isdigit(c); });
-}
-
-static std::expected<Seconds, ParseStatus> ParseTimeValue(
-    std::string_view num_str) {
-  if (!IsPositiveNum(num_str)) {
-    return std::unexpected(ParseStatus::kInvalidTimeout);
-  }
-
-  uint64_t timeout_tmp = std::stoull(num_str.data());
-  if (timeout_tmp > std::numeric_limits<uint32_t>::max()) {
-    return std::unexpected(ParseStatus::kInvalidTimeout);
-  }
-
-  return timeout_tmp;
-}
-
 ExecStatus ConnectCmd::Execute([[gnu::unused]] ConfigPtr config) {
   return ExecStatus::kNotImplemented;
 }
@@ -55,21 +34,15 @@ ExpectedCmd<ConnectCmd> ConnectCmd::Create(std::string_view cmdline) {
     return std::unexpected(ParseStatus::kInvalidNumArgs);
   }
 
-  uint16_t port = 0;
+  std::expected<uint16_t, ParseStatus> port = 0;
   if (args.size() == 3) {
-    if (!IsPositiveNum(args[2])) {
-      return std::unexpected(ParseStatus::kInvalidPortNum);
+    port = ParsePort(args[2]);
+    if (!port) {
+      return std::unexpected(port.error());
     }
-
-    uint64_t port_tmp = std::stoull(args[2]);
-    if (port_tmp > std::numeric_limits<uint16_t>::max()) {
-      return std::unexpected(ParseStatus::kInvalidPortNum);
-    }
-
-    port = static_cast<uint16_t>(port_tmp);
   }
 
-  return std::shared_ptr<ConnectCmd>(new ConnectCmd(args[1], port));
+  return std::shared_ptr<ConnectCmd>(new ConnectCmd(args[1], *port));
 }
 
 ExecStatus GetCmd::Execute([[gnu::unused]] ConfigPtr config) {
@@ -153,15 +126,12 @@ ExpectedCmd<ModeCmd> ModeCmd::Create(std::string_view cmdline) {
     return std::unexpected(ParseStatus::kInvalidNumArgs);
   }
 
-  std::string mode_lower(args[1].size(), 0);
-  std::transform(args[1].cbegin(), args[1].cend(), mode_lower.begin(),
-                 [](char c) { return std::tolower(c); });
-
-  if ((mode_lower != SendMode::kNetAscii) && (mode_lower != SendMode::kOctet)) {
-    return std::unexpected(ParseStatus::kInvalidMode);
+  auto mode = ParseMode(args[1]);
+  if (!mode) {
+    return std::unexpected(mode.error());
   }
 
-  return std::shared_ptr<ModeCmd>(new ModeCmd(mode_lower));
+  return std::shared_ptr<ModeCmd>(new ModeCmd(*mode));
 }
 
 ExecStatus StatusCmd::Execute([[gnu::unused]] ConfigPtr config) {
@@ -182,12 +152,12 @@ ExpectedCmd<TimeoutCmd> TimeoutCmd::Create(std::string_view cmdline) {
     return std::unexpected(ParseStatus::kInvalidNumArgs);
   }
 
-  auto time_val = ParseTimeValue(args[1]);
-  if (!time_val) {
-    return std::unexpected(time_val.error());
+  auto timeout = ParseTimeValue(args[1]);
+  if (!timeout) {
+    return std::unexpected(timeout.error());
   }
 
-  return std::shared_ptr<TimeoutCmd>(new TimeoutCmd(*time_val));
+  return std::shared_ptr<TimeoutCmd>(new TimeoutCmd(*timeout));
 }
 
 ExecStatus RexmtCmd::Execute([[gnu::unused]] ConfigPtr config) {
@@ -200,12 +170,12 @@ ExpectedCmd<RexmtCmd> RexmtCmd::Create(std::string_view cmdline) {
     return std::unexpected(ParseStatus::kInvalidNumArgs);
   }
 
-  auto time_val = ParseTimeValue(args[1]);
-  if (!time_val) {
-    return std::unexpected(time_val.error());
+  auto rexmt_timeout = ParseTimeValue(args[1]);
+  if (!rexmt_timeout) {
+    return std::unexpected(rexmt_timeout.error());
   }
 
-  return std::shared_ptr<RexmtCmd>(new RexmtCmd(*time_val));
+  return std::shared_ptr<RexmtCmd>(new RexmtCmd(*rexmt_timeout));
 }
 
 ExecStatus HelpCmd::Execute([[gnu::unused]] ConfigPtr config) {

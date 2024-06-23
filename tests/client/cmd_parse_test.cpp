@@ -33,34 +33,32 @@ TEST(CmdParseTest, CreateConnectCmdWithInvalidArgCountReturnsInvalidNumArgs) {
 
   ASSERT_FALSE(conn_cmd_too_many_args);
   ASSERT_FALSE(conn_cmd_too_few_args);
-  ASSERT_EQ(conn_cmd_too_many_args.error(),
-            tftp::client::ParseStatus::kInvalidNumArgs);
-  ASSERT_EQ(conn_cmd_too_few_args.error(),
-            tftp::client::ParseStatus::kInvalidNumArgs);
+  ASSERT_EQ(conn_cmd_too_many_args.error(), tftp::ParseStatus::kInvalidNumArgs);
+  ASSERT_EQ(conn_cmd_too_few_args.error(), tftp::ParseStatus::kInvalidNumArgs);
 }
 
-TEST(CmdParseTest, CreateConnectCmdWithNegativePortReturnsInvalidPortNum) {
+TEST(CmdParseTest, CreateConnectCmdWithNegativePortReturnsPortNumOutOfRange) {
   std::string cmdline = "connect localhost -5555";
   auto conn_cmd = tftp::client::ConnectCmd::Create(cmdline);
 
   ASSERT_FALSE(conn_cmd);
-  ASSERT_EQ(conn_cmd.error(), tftp::client::ParseStatus::kInvalidPortNum);
+  ASSERT_EQ(conn_cmd.error(), tftp::ParseStatus::kPortNumOutOfRange);
 }
 
-TEST(CmdParseTest, CreateConnectCmdWithNonNumericPortReturnsInvalidPortNum) {
+TEST(CmdParseTest, CreateConnectCmdWithNonNumericPortReturnsPortNumOutOfRange) {
   std::string cmdline = "connect localhost foo";
   auto conn_cmd = tftp::client::ConnectCmd::Create(cmdline);
 
   ASSERT_FALSE(conn_cmd);
-  ASSERT_EQ(conn_cmd.error(), tftp::client::ParseStatus::kInvalidPortNum);
+  ASSERT_EQ(conn_cmd.error(), tftp::ParseStatus::kPortNumOutOfRange);
 }
 
-TEST(CmdParseTest, CreateConnectCmdWithOutOfRangePortReturnsInvalidPortNum) {
+TEST(CmdParseTest, CreateConnectCmdWithOutOfRangePortReturnsPortNumOutOfRange) {
   std::string cmdline = "connect localhost 65536";
   auto conn_cmd = tftp::client::ConnectCmd::Create(cmdline);
 
   ASSERT_FALSE(conn_cmd);
-  ASSERT_EQ(conn_cmd.error(), tftp::client::ParseStatus::kInvalidPortNum);
+  ASSERT_EQ(conn_cmd.error(), tftp::ParseStatus::kPortNumOutOfRange);
 }
 
 TEST(CmdParseTest, CreateTimeoutWithValidTimeArgReturnsSuccess) {
@@ -83,33 +81,33 @@ TEST(CmdParseTest, CreateTimeoutWithInvalidArgCountReturnsInvalidNumArgs) {
   ASSERT_FALSE(timeout_cmd_too_many_args);
   ASSERT_FALSE(timeout_cmd_too_few_args);
   ASSERT_EQ(timeout_cmd_too_many_args.error(),
-            tftp::client::ParseStatus::kInvalidNumArgs);
+            tftp::ParseStatus::kInvalidNumArgs);
   ASSERT_EQ(timeout_cmd_too_few_args.error(),
-            tftp::client::ParseStatus::kInvalidNumArgs);
+            tftp::ParseStatus::kInvalidNumArgs);
 }
 
-TEST(CmdParseTest, CreateTimeoutWithNonNumericArgReturnsInvalidTimeout) {
+TEST(CmdParseTest, CreateTimeoutWithNonNumericArgReturnsTimeoutOutOfRange) {
   std::string cmdline = "timeout foo";
   auto timeout_cmd = tftp::client::TimeoutCmd::Create(cmdline);
 
   ASSERT_FALSE(timeout_cmd);
-  ASSERT_EQ(timeout_cmd.error(), tftp::client::ParseStatus::kInvalidTimeout);
+  ASSERT_EQ(timeout_cmd.error(), tftp::ParseStatus::kTimeoutOutOfRange);
 }
 
-TEST(CmdParseTest, CreateTimeoutWithNegativeArgReturnsInvalidTimeout) {
+TEST(CmdParseTest, CreateTimeoutWithNegativeArgReturnsTimeoutOutOfRange) {
   std::string cmdline = "timeout -1";
   auto timeout_cmd = tftp::client::TimeoutCmd::Create(cmdline);
 
   ASSERT_FALSE(timeout_cmd);
-  ASSERT_EQ(timeout_cmd.error(), tftp::client::ParseStatus::kInvalidTimeout);
+  ASSERT_EQ(timeout_cmd.error(), tftp::ParseStatus::kTimeoutOutOfRange);
 }
 
-TEST(CmdParseTest, CreateTimeoutWithOutOfRangeArgReturnsInvalidTimeout) {
+TEST(CmdParseTest, CreateTimeoutWithOutOfRangeArgReturnsTimeoutOutOfRange) {
   std::string cmdline = "timeout 4294967296";
   auto timeout_cmd = tftp::client::TimeoutCmd::Create(cmdline);
 
   ASSERT_FALSE(timeout_cmd);
-  ASSERT_EQ(timeout_cmd.error(), tftp::client::ParseStatus::kInvalidTimeout);
+  ASSERT_EQ(timeout_cmd.error(), tftp::ParseStatus::kTimeoutOutOfRange);
 }
 
 TEST(CmdParseTest, CreateRexmtWithValidTimeArgReturnsSuccess) {
@@ -131,33 +129,33 @@ TEST(CmdParseTest, CreateRexmtWithInvalidArgCountReturnsInvalidNumArgs) {
   ASSERT_FALSE(timeout_cmd_too_many_args);
   ASSERT_FALSE(timeout_cmd_too_few_args);
   ASSERT_EQ(timeout_cmd_too_many_args.error(),
-            tftp::client::ParseStatus::kInvalidNumArgs);
+            tftp::ParseStatus::kInvalidNumArgs);
   ASSERT_EQ(timeout_cmd_too_few_args.error(),
-            tftp::client::ParseStatus::kInvalidNumArgs);
+            tftp::ParseStatus::kInvalidNumArgs);
 }
 
-TEST(CmdParseTest, CreateRexmtWithNonNumericArgReturnsInvalidTimeout) {
+TEST(CmdParseTest, CreateRexmtWithNonNumericArgReturnsTimeoutOutOfRange) {
   std::string cmdline = "rexmt foo";
   auto timeout_cmd = tftp::client::RexmtCmd::Create(cmdline);
 
   ASSERT_FALSE(timeout_cmd);
-  ASSERT_EQ(timeout_cmd.error(), tftp::client::ParseStatus::kInvalidTimeout);
+  ASSERT_EQ(timeout_cmd.error(), tftp::ParseStatus::kTimeoutOutOfRange);
 }
 
-TEST(CmdParseTest, CreateRexmtWithNegativeArgReturnsInvalidTimeout) {
+TEST(CmdParseTest, CreateRexmtWithNegativeArgReturnsTimeoutOutOfRange) {
   std::string cmdline = "rexmt -1";
   auto timeout_cmd = tftp::client::RexmtCmd::Create(cmdline);
 
   ASSERT_FALSE(timeout_cmd);
-  ASSERT_EQ(timeout_cmd.error(), tftp::client::ParseStatus::kInvalidTimeout);
+  ASSERT_EQ(timeout_cmd.error(), tftp::ParseStatus::kTimeoutOutOfRange);
 }
 
-TEST(CmdParseTest, CreateRexmtWithOutOfRangeArgReturnsInvalidTimeout) {
+TEST(CmdParseTest, CreateRexmtWithOutOfRangeArgReturnsTimeoutOutOfRange) {
   std::string cmdline = "rexmt 4294967296";
   auto timeout_cmd = tftp::client::RexmtCmd::Create(cmdline);
 
   ASSERT_FALSE(timeout_cmd);
-  ASSERT_EQ(timeout_cmd.error(), tftp::client::ParseStatus::kInvalidTimeout);
+  ASSERT_EQ(timeout_cmd.error(), tftp::ParseStatus::kTimeoutOutOfRange);
 }
 
 TEST(CmdParseTest, CreateHelpCmdWithValidArgsReturnsSuccess) {
@@ -177,10 +175,8 @@ TEST(CmdParseTest, CreateHelpCmdWithInvalidArgCountReturnsInvalidNumArgs) {
 
   ASSERT_FALSE(help_cmd_too_many_args);
   ASSERT_FALSE(help_cmd_too_few_args);
-  ASSERT_EQ(help_cmd_too_many_args.error(),
-            tftp::client::ParseStatus::kInvalidNumArgs);
-  ASSERT_EQ(help_cmd_too_few_args.error(),
-            tftp::client::ParseStatus::kInvalidNumArgs);
+  ASSERT_EQ(help_cmd_too_many_args.error(), tftp::ParseStatus::kInvalidNumArgs);
+  ASSERT_EQ(help_cmd_too_few_args.error(), tftp::ParseStatus::kInvalidNumArgs);
 }
 
 TEST(CmdParseTest, CreateGetCmdWithInvalidArgCountReturnsInvalidNumArgs) {
@@ -188,7 +184,7 @@ TEST(CmdParseTest, CreateGetCmdWithInvalidArgCountReturnsInvalidNumArgs) {
   auto get_cmd = tftp::client::GetCmd::Create(too_few_args);
 
   ASSERT_FALSE(get_cmd);
-  ASSERT_EQ(get_cmd.error(), tftp::client::ParseStatus::kInvalidNumArgs);
+  ASSERT_EQ(get_cmd.error(), tftp::ParseStatus::kInvalidNumArgs);
 }
 
 TEST(CmdParseTest, CreateGetCmdSingleFileReturnsSuccess) {
@@ -239,7 +235,7 @@ TEST(CmdParseTest, CreatePutCmdWithInvalidArgCountReturnsInvalidNumArgs) {
   auto put_cmd = tftp::client::PutCmd::Create(too_few_args);
 
   ASSERT_FALSE(put_cmd);
-  ASSERT_EQ(put_cmd.error(), tftp::client::ParseStatus::kInvalidNumArgs);
+  ASSERT_EQ(put_cmd.error(), tftp::ParseStatus::kInvalidNumArgs);
 }
 
 TEST(CmdParseTest, CreatePutCmdSingleFileReturnsSuccess) {

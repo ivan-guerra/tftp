@@ -9,9 +9,15 @@ namespace tftp {
 
 using BlockNum = uint16_t;
 using BlockData = std::vector<uint8_t>;
-using Mode = std::string;
 using TftpPacket = std::vector<uint8_t>;
-using HostName = std::string;
+using Mode = std::string;
+using Hostname = std::string;
+using Seconds = uint16_t;
+
+struct PortRange {
+  uint16_t start = 0;
+  uint16_t end = 0;
+};
 
 enum ErrorCode : uint16_t {
   kNotDefined = 0,
