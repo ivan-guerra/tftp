@@ -117,8 +117,9 @@ ExpectedCmd<LiteralCmd> LiteralCmd::Create() {
   return std::shared_ptr<LiteralCmd>(new LiteralCmd());
 }
 
-ExecStatus ModeCmd::Execute([[gnu::unused]] ConfigPtr config) {
-  return ExecStatus::kNotImplemented;
+ExecStatus ModeCmd::Execute(ConfigPtr config) {
+  config->SetMode(mode_);
+  return ExecStatus::kSuccessfulExec;
 }
 
 ExpectedCmd<ModeCmd> ModeCmd::Create(std::string_view cmdline) {
