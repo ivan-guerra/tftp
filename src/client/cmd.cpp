@@ -2,6 +2,7 @@
 
 #include <cstdint>
 #include <expected>
+#include <iostream>
 #include <iterator>
 #include <memory>
 #include <sstream>
@@ -136,8 +137,19 @@ ExpectedCmd<ModeCmd> ModeCmd::Create(std::string_view cmdline) {
   return std::shared_ptr<ModeCmd>(new ModeCmd(*mode));
 }
 
-ExecStatus StatusCmd::Execute([[gnu::unused]] ConfigPtr config) {
-  return ExecStatus::kNotImplemented;
+ExecStatus StatusCmd::Execute(ConfigPtr config) {
+  std::cout << "\tmode: " << config->GetMode() << std::endl;
+  std::cout << "\tliteral mode enabled: " << std::boolalpha
+            << config->GetLiteralMode() << std::endl;
+  std::cout << "\thostname: " << config->GetHostname() << std::endl;
+  std::cout << "\tports: " << config->GetPortRange().start << "-"
+            << config->GetPortRange().end << std::endl;
+  std::cout << "\ttransmission timeout (sec): " << config->GetTimeout()
+            << std::endl;
+  std::cout << "\trexmt timeout (sec): " << config->GetRexmtTimeout()
+            << std::endl;
+
+  return ExecStatus::kSuccessfulExec;
 }
 
 ExpectedCmd<StatusCmd> StatusCmd::Create() {
