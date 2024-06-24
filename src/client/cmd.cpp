@@ -108,8 +108,9 @@ ExpectedCmd<PutCmd> PutCmd::Create(std::string_view cmdline) {
       new PutCmd(remote_file, local_file, remote_dir, files));
 }
 
-ExecStatus LiteralCmd::Execute([[gnu::unused]] ConfigPtr config) {
-  return ExecStatus::kNotImplemented;
+ExecStatus LiteralCmd::Execute(ConfigPtr config) {
+  config->SetLiteralMode(literal_mode_);
+  return ExecStatus::kSuccessfulExec;
 }
 
 ExpectedCmd<LiteralCmd> LiteralCmd::Create() {
