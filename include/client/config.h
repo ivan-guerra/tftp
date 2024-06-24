@@ -33,6 +33,7 @@ class Config {
   void SetLiteralMode(bool literal_mode) { literal_mode_ = literal_mode; }
   void SetHostname(const Hostname& hostname) { hostname_ = hostname; }
   std::optional<ParseStatus> SetTimeout(std::string_view timeout);
+  void SetTimeout(Seconds timeout) { timeout_ = timeout; }
   std::optional<ParseStatus> SetRexmtTimeout(std::string_view rexmt_timeout);
 
  private:

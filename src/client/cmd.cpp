@@ -157,8 +157,10 @@ ExpectedCmd<StatusCmd> StatusCmd::Create() {
   return std::shared_ptr<StatusCmd>(new StatusCmd());
 }
 
-ExecStatus TimeoutCmd::Execute([[gnu::unused]] ConfigPtr config) {
-  return ExecStatus::kNotImplemented;
+ExecStatus TimeoutCmd::Execute(ConfigPtr config) {
+  config->SetTimeout(timeout_);
+
+  return ExecStatus::kSuccessfulExec;
 }
 
 ExpectedCmd<TimeoutCmd> TimeoutCmd::Create(std::string_view cmdline) {
