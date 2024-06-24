@@ -2,7 +2,7 @@ cmake_minimum_required(VERSION 3.28)
 
 set(TESTNAME common_test)
 
-add_executable(${TESTNAME} pack_test.cpp)
+add_executable(${TESTNAME} pack_test.cpp parse_test.cpp)
 
 target_link_libraries(${TESTNAME} PRIVATE gtest_main common)
 
