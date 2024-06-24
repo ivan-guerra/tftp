@@ -142,12 +142,8 @@ class LiteralCmd : public Cmd {
 
   ExecStatus Execute(ConfigPtr config) final;
 
-  bool LiteralMode() const { return literal_mode_; }
-
  private:
-  LiteralCmd() : Cmd(CmdId::kLiteral), literal_mode_(false) {}
-
-  bool literal_mode_;
+  LiteralCmd() : Cmd(CmdId::kLiteral) {}
 };
 
 class ModeCmd : public Cmd {

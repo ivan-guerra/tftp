@@ -110,7 +110,8 @@ ExpectedCmd<PutCmd> PutCmd::Create(std::string_view cmdline) {
 }
 
 ExecStatus LiteralCmd::Execute(ConfigPtr config) {
-  config->SetLiteralMode(literal_mode_);
+  config->SetLiteralMode(!config->GetLiteralMode());
+
   return ExecStatus::kSuccessfulExec;
 }
 
