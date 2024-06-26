@@ -12,7 +12,7 @@ namespace client {
 
 class CmdProcessor {
  public:
-  explicit CmdProcessor(ConfigPtr conf) : conf_(conf) {}
+  explicit CmdProcessor(const Config& conf) : conf_(conf) {}
 
   ~CmdProcessor() = default;
   CmdProcessor() = delete;
@@ -32,7 +32,7 @@ class CmdProcessor {
 
   void PrintError(std::string_view err_msg) const;
 
-  ConfigPtr conf_;
+  Config conf_;
 };
 
 template <typename T>

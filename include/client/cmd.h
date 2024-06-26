@@ -47,7 +47,7 @@ constexpr std::array<const char*, ExecStatus::kExecStatusCnt> kExecStatusToStr =
 
 class Cmd {
  public:
-  virtual ExecStatus Execute([[gnu::unused]] ConfigPtr config) {
+  virtual ExecStatus Execute([[gnu::unused]] Config& conf) {
     return ExecStatus::kNotImplemented;
   }
 
@@ -66,7 +66,7 @@ class GetCmd : public Cmd {
 
   virtual ~GetCmd() = default;
 
-  ExecStatus Execute(ConfigPtr config) final;
+  ExecStatus Execute(Config& conf) final;
 
   const File& RemoteFile() const { return remote_file_; }
   const File& LocalFile() const { return local_file_; }
@@ -91,7 +91,7 @@ class PutCmd : public Cmd {
 
   virtual ~PutCmd() = default;
 
-  ExecStatus Execute(ConfigPtr config) final;
+  ExecStatus Execute(Config& conf) final;
 
   const File& RemoteFile() const { return remote_file_; }
   const File& LocalFile() const { return local_file_; }
@@ -120,7 +120,7 @@ class ConnectCmd : public Cmd {
 
   virtual ~ConnectCmd() = default;
 
-  ExecStatus Execute(ConfigPtr config) final;
+  ExecStatus Execute(Config& conf) final;
 
   std::string Host() const { return host_; }
   uint16_t Port() const { return port_; }
@@ -140,7 +140,7 @@ class LiteralCmd : public Cmd {
 
   virtual ~LiteralCmd() = default;
 
-  ExecStatus Execute(ConfigPtr config) final;
+  ExecStatus Execute(Config& conf) final;
 
  private:
   LiteralCmd() : Cmd(CmdId::kLiteral) {}
@@ -152,7 +152,7 @@ class ModeCmd : public Cmd {
 
   virtual ~ModeCmd() = default;
 
-  ExecStatus Execute(ConfigPtr config) final;
+  ExecStatus Execute(Config& conf) final;
 
   const Mode& Mode() const { return mode_; }
 
@@ -169,7 +169,7 @@ class StatusCmd : public Cmd {
 
   virtual ~StatusCmd() = default;
 
-  ExecStatus Execute(ConfigPtr config) final;
+  ExecStatus Execute(Config& conf) final;
 
  private:
   StatusCmd() : Cmd(CmdId::kStatus) {}
@@ -181,7 +181,7 @@ class TimeoutCmd : public Cmd {
 
   virtual ~TimeoutCmd() = default;
 
-  ExecStatus Execute(ConfigPtr config) final;
+  ExecStatus Execute(Config& conf) final;
 
   Seconds Timeout() const { return timeout_; }
 
@@ -199,7 +199,7 @@ class RexmtCmd : public Cmd {
 
   virtual ~RexmtCmd() = default;
 
-  ExecStatus Execute(ConfigPtr config) final;
+  ExecStatus Execute(Config& conf) final;
 
   Seconds RexmtTimeout() const { return rexmt_timeout_; }
 
@@ -217,7 +217,7 @@ class HelpCmd : public Cmd {
 
   virtual ~HelpCmd() = default;
 
-  ExecStatus Execute(ConfigPtr config) final;
+  ExecStatus Execute(Config& conf) final;
 
   const tftp::client::Id& TargetCmd() const { return target_cmd_; }
 

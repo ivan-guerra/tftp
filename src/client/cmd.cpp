@@ -25,7 +25,7 @@ static TokenList Tokenize(std::string_view cmdline) {
   return {std::istream_iterator<Token>(buffer), {}};
 }
 
-ExecStatus ConnectCmd::Execute([[gnu::unused]] ConfigPtr config) {
+ExecStatus ConnectCmd::Execute([[gnu::unused]] Config& conf) {
   return ExecStatus::kNotImplemented;
 }
 
@@ -46,7 +46,7 @@ ExpectedCmd<ConnectCmd> ConnectCmd::Create(std::string_view cmdline) {
   return std::shared_ptr<ConnectCmd>(new ConnectCmd(args[1], *port));
 }
 
-ExecStatus GetCmd::Execute([[gnu::unused]] ConfigPtr config) {
+ExecStatus GetCmd::Execute([[gnu::unused]] Config& conf) {
   return ExecStatus::kNotImplemented;
 }
 
@@ -76,7 +76,7 @@ ExpectedCmd<GetCmd> GetCmd::Create(std::string_view cmdline) {
   return std::shared_ptr<GetCmd>(new GetCmd(remote_file, local_file, files));
 }
 
-ExecStatus PutCmd::Execute([[gnu::unused]] ConfigPtr config) {
+ExecStatus PutCmd::Execute([[gnu::unused]] Config& conf) {
   return ExecStatus::kNotImplemented;
 }
 
@@ -109,8 +109,8 @@ ExpectedCmd<PutCmd> PutCmd::Create(std::string_view cmdline) {
       new PutCmd(remote_file, local_file, remote_dir, files));
 }
 
-ExecStatus LiteralCmd::Execute(ConfigPtr config) {
-  config->SetLiteralMode(!config->GetLiteralMode());
+ExecStatus LiteralCmd::Execute(Config& conf) {
+  conf.literal_mode = !conf.literal_mode;
 
   return ExecStatus::kSuccessfulExec;
 }
@@ -119,8 +119,8 @@ ExpectedCmd<LiteralCmd> LiteralCmd::Create() {
   return std::shared_ptr<LiteralCmd>(new LiteralCmd());
 }
 
-ExecStatus ModeCmd::Execute(ConfigPtr config) {
-  config->SetMode(mode_);
+ExecStatus ModeCmd::Execute(Config& conf) {
+  conf.mode = mode_;
   return ExecStatus::kSuccessfulExec;
 }
 
@@ -138,17 +138,15 @@ ExpectedCmd<ModeCmd> ModeCmd::Create(std::string_view cmdline) {
   return std::shared_ptr<ModeCmd>(new ModeCmd(*mode));
 }
 
-ExecStatus StatusCmd::Execute(ConfigPtr config) {
-  std::cout << "\tmode: " << config->GetMode() << std::endl;
-  std::cout << "\tliteral mode enabled: " << std::boolalpha
-            << config->GetLiteralMode() << std::endl;
-  std::cout << "\thostname: " << config->GetHostname() << std::endl;
-  std::cout << "\tports: " << config->GetPortRange().start << "-"
-            << config->GetPortRange().end << std::endl;
-  std::cout << "\ttransmission timeout (sec): " << config->GetTimeout()
+ExecStatus StatusCmd::Execute(Config& conf) {
+  std::cout << "\tmode: " << conf.mode << std::endl;
+  std::cout << "\tliteral mode enabled: " << std::boolalpha << conf.literal_mode
             << std::endl;
-  std::cout << "\trexmt timeout (sec): " << config->GetRexmtTimeout()
+  std::cout << "\thostname: " << conf.hostname << std::endl;
+  std::cout << "\tports: " << conf.ports.start << "-" << conf.ports.end
             << std::endl;
+  std::cout << "\ttransmission timeout (sec): " << conf.timeout << std::endl;
+  std::cout << "\trexmt timeout (sec): " << conf.rexmt_timeout << std::endl;
 
   return ExecStatus::kSuccessfulExec;
 }
@@ -157,8 +155,8 @@ ExpectedCmd<StatusCmd> StatusCmd::Create() {
   return std::shared_ptr<StatusCmd>(new StatusCmd());
 }
 
-ExecStatus TimeoutCmd::Execute(ConfigPtr config) {
-  config->SetTimeout(timeout_);
+ExecStatus TimeoutCmd::Execute(Config& conf) {
+  conf.timeout = timeout_;
 
   return ExecStatus::kSuccessfulExec;
 }
@@ -177,8 +175,10 @@ ExpectedCmd<TimeoutCmd> TimeoutCmd::Create(std::string_view cmdline) {
   return std::shared_ptr<TimeoutCmd>(new TimeoutCmd(*timeout));
 }
 
-ExecStatus RexmtCmd::Execute([[gnu::unused]] ConfigPtr config) {
-  return ExecStatus::kNotImplemented;
+ExecStatus RexmtCmd::Execute(Config& conf) {
+  conf.rexmt_timeout = rexmt_timeout_;
+
+  return ExecStatus::kSuccessfulExec;
 }
 
 ExpectedCmd<RexmtCmd> RexmtCmd::Create(std::string_view cmdline) {
@@ -195,7 +195,7 @@ ExpectedCmd<RexmtCmd> RexmtCmd::Create(std::string_view cmdline) {
   return std::shared_ptr<RexmtCmd>(new RexmtCmd(*rexmt_timeout));
 }
 
-ExecStatus HelpCmd::Execute([[gnu::unused]] ConfigPtr config) {
+ExecStatus HelpCmd::Execute([[gnu::unused]] Config& conf) {
   return ExecStatus::kNotImplemented;
 }
 

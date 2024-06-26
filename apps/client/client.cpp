@@ -2,13 +2,13 @@
 
 #include <cstdlib>
 #include <iostream>
-#include <string>
 #include <string_view>
 #include <vector>
 
 #include "client/cmd_processor.h"
 #include "client/config.h"
 #include "common/parse.h"
+#include "common/types.h"
 
 static void PrintErrAndExit(std::string_view err_msg) {
   std::cerr << "error: " << err_msg << std::endl;
@@ -54,11 +54,11 @@ int main(int argc, char** argv) {
       {0, 0, 0, 0},
   };
 
-  std::string hostname = "localhost";
-  std::string mode = "ascii";
-  std::string port_range = "2048:65535";
-  std::string timeout = "60";
-  std::string rexmt_timeout = "10";
+  tftp::Hostname hostname = "localhost";
+  tftp::Mode mode = tftp::SendMode::kNetAscii;
+  tftp::PortRange port_range = {.start = 2048, .end = 65535};
+  tftp::Seconds timeout = 60;
+  tftp::Seconds rexmt_timeout = 10;
   bool literal_mode = false;
 
   int opt = 0;
@@ -69,21 +69,46 @@ int main(int argc, char** argv) {
       case 'n':
         hostname = optarg;
         break;
-      case 'm':
-        mode = optarg;
+      case 'm': {
+        auto parsed_mode = tftp::ParseMode(optarg);
+        if (!parsed_mode) {
+          PrintErrAndExit(tftp::kParseStatusToStr[parsed_mode.error()]);
+        }
+        mode = *parsed_mode;
         break;
-      case 'p':
-        port_range = std::string(optarg) + ":" + std::string(optarg);
+      }
+      case 'p': {
+        auto parsed_port = tftp::ParsePort(optarg);
+        if (!parsed_port) {
+          PrintErrAndExit(tftp::kParseStatusToStr[parsed_port.error()]);
+        }
+        port_range = {.start = *parsed_port, .end = *parsed_port};
         break;
-      case 'R':
-        port_range = optarg;
+      }
+      case 'R': {
+        auto parsed_port_rng = tftp::ParsePortRange(optarg);
+        if (!parsed_port_rng) {
+          PrintErrAndExit(tftp::kParseStatusToStr[parsed_port_rng.error()]);
+        }
+        port_range = *parsed_port_rng;
         break;
-      case 't':
-        timeout = optarg;
+      }
+      case 't': {
+        auto parsed_timeout = tftp::ParseTimeValue(optarg);
+        if (!parsed_timeout) {
+          PrintErrAndExit(tftp::kParseStatusToStr[parsed_timeout.error()]);
+        }
+        timeout = *parsed_timeout;
         break;
-      case 'r':
-        rexmt_timeout = optarg;
+      }
+      case 'r': {
+        auto parsed_timeout = tftp::ParseTimeValue(optarg);
+        if (!parsed_timeout) {
+          PrintErrAndExit(tftp::kParseStatusToStr[parsed_timeout.error()]);
+        }
+        rexmt_timeout = *parsed_timeout;
         break;
+      }
       case 'l':
         literal_mode = true;
         break;
@@ -97,13 +122,9 @@ int main(int argc, char** argv) {
     }
   }
 
-  auto config = tftp::client::Config::Create(mode, port_range, literal_mode,
-                                             hostname, timeout, rexmt_timeout);
-  if (!config) {
-    PrintErrAndExit(tftp::kParseStatusToStr[config.error()]);
-  }
-
-  tftp::client::CmdProcessor processor(*config);
+  tftp::client::Config conf(mode, port_range, literal_mode, hostname, timeout,
+                            rexmt_timeout);
+  tftp::client::CmdProcessor processor(conf);
   processor.Run();
 
   std::exit(EXIT_SUCCESS);
