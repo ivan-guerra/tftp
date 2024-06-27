@@ -58,13 +58,15 @@ void CmdProcessor::Run() {
       break;
     }
 
-    auto cmd = LoadCmd(line);
-    if (!cmd) { /* Unable to parse the commandline successfully. */
-      PrintError(kParseStatusToStr[cmd.error()]);
-    } else { /* Got a valid command, execute it. */
-      ExecStatus exec_stat = (*cmd)->Execute(conf_);
-      if (exec_stat != ExecStatus::kSuccessfulExec) {
-        PrintError(kExecStatusToStr[exec_stat]);
+    if (!line.empty()) {
+      auto cmd = LoadCmd(line);
+      if (!cmd) { /* Unable to parse the commandline successfully. */
+        PrintError(kParseStatusToStr[cmd.error()]);
+      } else { /* Got a valid command, execute it. */
+        ExecStatus exec_stat = (*cmd)->Execute(conf_);
+        if (exec_stat != ExecStatus::kSuccessfulExec) {
+          PrintError(kExecStatusToStr[exec_stat]);
+        }
       }
     }
     std::cout << kPrompt;
