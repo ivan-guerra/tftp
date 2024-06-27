@@ -25,8 +25,12 @@ static TokenList Tokenize(std::string_view cmdline) {
   return {std::istream_iterator<Token>(buffer), {}};
 }
 
-ExecStatus ConnectCmd::Execute([[gnu::unused]] Config& conf) {
-  return ExecStatus::kNotImplemented;
+ExecStatus ConnectCmd::Execute(Config& conf) {
+  conf.hostname = host_;
+  conf.ports.start = port_;
+  conf.ports.end = port_;
+
+  return ExecStatus::kSuccessfulExec;
 }
 
 ExpectedCmd<ConnectCmd> ConnectCmd::Create(std::string_view cmdline) {
@@ -143,8 +147,12 @@ ExecStatus StatusCmd::Execute(Config& conf) {
   std::cout << "\tliteral mode enabled: " << std::boolalpha << conf.literal_mode
             << std::endl;
   std::cout << "\thostname: " << conf.hostname << std::endl;
-  std::cout << "\tports: " << conf.ports.start << "-" << conf.ports.end
-            << std::endl;
+  if (conf.ports.start == conf.ports.end) {
+    std::cout << "\tport: " << conf.ports.start << std::endl;
+  } else {
+    std::cout << "\tports: " << conf.ports.start << "-" << conf.ports.end
+              << std::endl;
+  }
   std::cout << "\ttransmission timeout (sec): " << conf.timeout << std::endl;
   std::cout << "\trexmt timeout (sec): " << conf.rexmt_timeout << std::endl;
 
