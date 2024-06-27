@@ -33,17 +33,19 @@ constexpr Id kMode = "mode";
 constexpr Id kStatus = "status";
 constexpr Id kTimeout = "timeout";
 constexpr Id kRexmt = "rexmt";
-constexpr Id kHelp = "?";
+constexpr Id kHelp = "help";
 }  // namespace CmdId
 
 enum ExecStatus : int {
   kSuccessfulExec = 0,
   kNotImplemented,
+  kUnknownCmdHelp,
   kExecStatusCnt,
 };
 
 constexpr std::array<const char*, ExecStatus::kExecStatusCnt> kExecStatusToStr =
-    {"success", "command not implemented"};
+    {"success", "command not implemented",
+     "cannot output help message, unknown cmd"};
 
 class Cmd {
  public:
@@ -63,6 +65,7 @@ class Cmd {
 class GetCmd : public Cmd {
  public:
   static ExpectedCmd<GetCmd> Create(std::string_view cmdline);
+  static void PrintUsage();
 
   virtual ~GetCmd() = default;
 
@@ -88,6 +91,7 @@ class GetCmd : public Cmd {
 class PutCmd : public Cmd {
  public:
   static ExpectedCmd<PutCmd> Create(std::string_view cmdline);
+  static void PrintUsage();
 
   virtual ~PutCmd() = default;
 
@@ -117,6 +121,7 @@ class PutCmd : public Cmd {
 class ConnectCmd : public Cmd {
  public:
   static ExpectedCmd<ConnectCmd> Create(std::string_view cmdline);
+  static void PrintUsage();
 
   virtual ~ConnectCmd() = default;
 
@@ -137,6 +142,7 @@ class ConnectCmd : public Cmd {
 class LiteralCmd : public Cmd {
  public:
   static ExpectedCmd<LiteralCmd> Create();
+  static void PrintUsage();
 
   virtual ~LiteralCmd() = default;
 
@@ -149,6 +155,7 @@ class LiteralCmd : public Cmd {
 class ModeCmd : public Cmd {
  public:
   static ExpectedCmd<ModeCmd> Create(std::string_view cmdline);
+  static void PrintUsage();
 
   virtual ~ModeCmd() = default;
 
@@ -166,6 +173,7 @@ class ModeCmd : public Cmd {
 class StatusCmd : public Cmd {
  public:
   static ExpectedCmd<StatusCmd> Create();
+  static void PrintUsage();
 
   virtual ~StatusCmd() = default;
 
@@ -178,6 +186,7 @@ class StatusCmd : public Cmd {
 class TimeoutCmd : public Cmd {
  public:
   static ExpectedCmd<TimeoutCmd> Create(std::string_view cmdline);
+  static void PrintUsage();
 
   virtual ~TimeoutCmd() = default;
 
@@ -196,6 +205,7 @@ class TimeoutCmd : public Cmd {
 class RexmtCmd : public Cmd {
  public:
   static ExpectedCmd<RexmtCmd> Create(std::string_view cmdline);
+  static void PrintUsage();
 
   virtual ~RexmtCmd() = default;
 
@@ -214,6 +224,7 @@ class RexmtCmd : public Cmd {
 class HelpCmd : public Cmd {
  public:
   static ExpectedCmd<HelpCmd> Create(std::string_view cmdline);
+  static void PrintUsage();
 
   virtual ~HelpCmd() = default;
 

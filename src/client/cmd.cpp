@@ -50,6 +50,26 @@ ExpectedCmd<ConnectCmd> ConnectCmd::Create(std::string_view cmdline) {
   return std::shared_ptr<ConnectCmd>(new ConnectCmd(args[1], *port));
 }
 
+void ConnectCmd::PrintUsage() {
+  std::cout << "connect host [port]" << std::endl;
+  std::cout << "    Set the host (and optionally port) for transfers. Note "
+               "that the TFTP"
+            << std::endl;
+  std::cout << "    protocol, unlike the FTP protocol, does not maintain "
+               "connections between"
+            << std::endl;
+  std::cout << "    transfers; thus, the connect command does not actually "
+               "create a connection,"
+            << std::endl;
+  std::cout << "    but merely remembers what host is to be used for "
+               "transfers. You do not have"
+            << std::endl;
+  std::cout << "    to use the connect command; the remote host can be "
+               "specified as part of the"
+            << std::endl;
+  std::cout << "    get or put commands." << std::endl;
+}
+
 ExecStatus GetCmd::Execute([[gnu::unused]] Config& conf) {
   return ExecStatus::kNotImplemented;
 }
@@ -78,6 +98,31 @@ ExpectedCmd<GetCmd> GetCmd::Create(std::string_view cmdline) {
   }
 
   return std::shared_ptr<GetCmd>(new GetCmd(remote_file, local_file, files));
+}
+
+void GetCmd::PrintUsage() {
+  std::cout << "get file" << std::endl;
+  std::cout << "get remotefile localfile" << std::endl;
+  std::cout << "get file1 file2 file3..." << std::endl;
+  std::cout << "    Get a file or set of files from the specified sources. A "
+               "remote filename can"
+            << std::endl;
+  std::cout << "    be in one of two forms: a plain filename on the remote "
+               "host, if the host has"
+            << std::endl;
+  std::cout << "    already been specified, or a string of the form "
+               "host:filename to specify"
+            << std::endl;
+  std::cout << "    both a host and filename at the same time. If the latter "
+               "form is used, the"
+            << std::endl;
+  std::cout << "    last hostname specified becomes the default for future "
+               "transfers. Enable"
+            << std::endl;
+  std::cout << "    literal mode to prevent special treatment of the ':' "
+               "character (e.g."
+            << std::endl;
+  std::cout << "    C:\\dir\\file)." << std::endl;
 }
 
 ExecStatus PutCmd::Execute([[gnu::unused]] Config& conf) {
@@ -113,6 +158,36 @@ ExpectedCmd<PutCmd> PutCmd::Create(std::string_view cmdline) {
       new PutCmd(remote_file, local_file, remote_dir, files));
 }
 
+void PutCmd::PrintUsage() {
+  std::cout << "put file" << std::endl;
+  std::cout << "put localfile remotefile" << std::endl;
+  std::cout << "put file1 file2 file3... remote-directory" << std::endl;
+  std::cout << "    Put a file or set of files to the specified remote file or "
+               "directory. The"
+            << std::endl;
+  std::cout << "    destination can be in one of two forms: a filename on the "
+               "remote host, if"
+            << std::endl;
+  std::cout << "    the host has already been specified, or a string of the "
+               "form host:filename"
+            << std::endl;
+  std::cout << "    to specify both a host and filename at the same time. If "
+               "the latter form is"
+            << std::endl;
+  std::cout << "    used, the hostname specified becomes the default for "
+               "future transfers. If"
+            << std::endl;
+  std::cout << "    the remote-directory form is used, the remote host is "
+               "assumed to be a UNIX"
+            << std::endl;
+  std::cout << "    system or another system using / as directory separator. "
+               "Enable literal mode"
+            << std::endl;
+  std::cout << "    to prevent special treatment of the ':' character (e.g. "
+               "C:\\dir\\file)."
+            << std::endl;
+}
+
 ExecStatus LiteralCmd::Execute(Config& conf) {
   conf.literal_mode = !conf.literal_mode;
 
@@ -121,6 +196,14 @@ ExecStatus LiteralCmd::Execute(Config& conf) {
 
 ExpectedCmd<LiteralCmd> LiteralCmd::Create() {
   return std::shared_ptr<LiteralCmd>(new LiteralCmd());
+}
+
+void LiteralCmd::PrintUsage() {
+  std::cout << "literal" << std::endl;
+  std::cout << "    Toggle literal mode. When set, this mode prevents special "
+               "treatment of ':'"
+            << std::endl;
+  std::cout << "    in filenames." << std::endl;
 }
 
 ExecStatus ModeCmd::Execute(Config& conf) {
@@ -140,6 +223,16 @@ ExpectedCmd<ModeCmd> ModeCmd::Create(std::string_view cmdline) {
   }
 
   return std::shared_ptr<ModeCmd>(new ModeCmd(*mode));
+}
+
+void ModeCmd::PrintUsage() {
+  std::cout << "mode transfer-mode" << std::endl;
+  std::cout
+      << "    Specify the mode for transfers; transfer-mode may be one of "
+         "ascii (or"
+      << std::endl;
+  std::cout << "    netascii) or binary (or octet.) The default is ascii. "
+            << std::endl;
 }
 
 ExecStatus StatusCmd::Execute(Config& conf) {
@@ -163,6 +256,11 @@ ExpectedCmd<StatusCmd> StatusCmd::Create() {
   return std::shared_ptr<StatusCmd>(new StatusCmd());
 }
 
+void StatusCmd::PrintUsage() {
+  std::cout << "status" << std::endl;
+  std::cout << "    Show current status." << std::endl;
+}
+
 ExecStatus TimeoutCmd::Execute(Config& conf) {
   conf.timeout = timeout_;
 
@@ -181,6 +279,12 @@ ExpectedCmd<TimeoutCmd> TimeoutCmd::Create(std::string_view cmdline) {
   }
 
   return std::shared_ptr<TimeoutCmd>(new TimeoutCmd(*timeout));
+}
+
+void TimeoutCmd::PrintUsage() {
+  std::cout << "timeout total-transmission-timeout" << std::endl;
+  std::cout << "    Set the total transmission timeout, in seconds."
+            << std::endl;
 }
 
 ExecStatus RexmtCmd::Execute(Config& conf) {
@@ -203,8 +307,35 @@ ExpectedCmd<RexmtCmd> RexmtCmd::Create(std::string_view cmdline) {
   return std::shared_ptr<RexmtCmd>(new RexmtCmd(*rexmt_timeout));
 }
 
+void RexmtCmd::PrintUsage() {
+  std::cout << "rexmt retransmission-timeout" << std::endl;
+  std::cout << "    Set the per-packet retransmission timeout, in seconds."
+            << std::endl;
+}
+
 ExecStatus HelpCmd::Execute([[gnu::unused]] Config& conf) {
-  return ExecStatus::kNotImplemented;
+  if (CmdId::kGet == target_cmd_) {
+    GetCmd::PrintUsage();
+  } else if (CmdId::kPut == target_cmd_) {
+    PutCmd::PrintUsage();
+  } else if (CmdId::kMode == target_cmd_) {
+    ModeCmd::PrintUsage();
+  } else if (CmdId::kRexmt == target_cmd_) {
+    RexmtCmd::PrintUsage();
+  } else if (CmdId::kStatus == target_cmd_) {
+    StatusCmd::PrintUsage();
+  } else if (CmdId::kConnect == target_cmd_) {
+    ConnectCmd::PrintUsage();
+  } else if (CmdId::kLiteral == target_cmd_) {
+    LiteralCmd::PrintUsage();
+  } else if (CmdId::kTimeout == target_cmd_) {
+    TimeoutCmd::PrintUsage();
+  } else if (CmdId::kHelp == target_cmd_) {
+    HelpCmd::PrintUsage();
+  } else {
+    return ExecStatus::kUnknownCmdHelp;
+  }
+  return ExecStatus::kSuccessfulExec;
 }
 
 ExpectedCmd<HelpCmd> HelpCmd::Create(std::string_view cmdline) {
@@ -214,6 +345,11 @@ ExpectedCmd<HelpCmd> HelpCmd::Create(std::string_view cmdline) {
   }
 
   return std::shared_ptr<HelpCmd>(new HelpCmd(args[1]));
+}
+
+void HelpCmd::PrintUsage() {
+  std::cout << "help command-name" << std::endl;
+  std::cout << "    Print help information" << std::endl;
 }
 
 }  // namespace client
