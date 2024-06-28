@@ -69,7 +69,7 @@ static std::expected<tftp::client::CmdPtr, tftp::ParseStatus> LoadCmd(
   using tftp::ParseStatus;
   using tftp::client::CmdPtr;
 
-  std::expected<CmdPtr, ParseStatus> cmd;
+  std::expected<CmdPtr, ParseStatus> cmd = nullptr;
   if (cmd_id == tftp::client::CmdId::kGet) {
     cmd = CreateCmd<tftp::client::GetCmd>(cmdline);
   } else if (cmd_id == tftp::client::CmdId::kPut) {

@@ -20,9 +20,9 @@ class Cmd;
 using Id = std::string;
 using File = std::string;
 using FileList = std::vector<File>;
-using CmdPtr = std::shared_ptr<Cmd>;
+using CmdPtr = std::unique_ptr<Cmd>;
 template <typename T>
-using ExpectedCmd = std::expected<std::shared_ptr<T>, ParseStatus>;
+using ExpectedCmd = std::expected<std::unique_ptr<T>, ParseStatus>;
 
 namespace CmdId {
 constexpr Id kConnect = "connect";
@@ -52,6 +52,8 @@ class Cmd {
   virtual ExecStatus Execute([[gnu::unused]] Config& conf) {
     return ExecStatus::kNotImplemented;
   }
+
+  virtual ~Cmd() = default;
 
   const Id& Id() const { return id_; }
 

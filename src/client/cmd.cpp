@@ -47,7 +47,7 @@ ExpectedCmd<ConnectCmd> ConnectCmd::Create(std::string_view cmdline) {
     }
   }
 
-  return std::shared_ptr<ConnectCmd>(new ConnectCmd(args[1], *port));
+  return std::unique_ptr<ConnectCmd>(new ConnectCmd(args[1], *port));
 }
 
 void ConnectCmd::PrintUsage() {
@@ -97,7 +97,7 @@ ExpectedCmd<GetCmd> GetCmd::Create(std::string_view cmdline) {
     files = args;
   }
 
-  return std::shared_ptr<GetCmd>(new GetCmd(remote_file, local_file, files));
+  return std::unique_ptr<GetCmd>(new GetCmd(remote_file, local_file, files));
 }
 
 void GetCmd::PrintUsage() {
@@ -154,7 +154,7 @@ ExpectedCmd<PutCmd> PutCmd::Create(std::string_view cmdline) {
     files = FileList(args.cbegin(), args.cbegin() + args.size() - 1);
   }
 
-  return std::shared_ptr<PutCmd>(
+  return std::unique_ptr<PutCmd>(
       new PutCmd(remote_file, local_file, remote_dir, files));
 }
 
@@ -195,7 +195,7 @@ ExecStatus LiteralCmd::Execute(Config& conf) {
 }
 
 ExpectedCmd<LiteralCmd> LiteralCmd::Create() {
-  return std::shared_ptr<LiteralCmd>(new LiteralCmd());
+  return std::unique_ptr<LiteralCmd>(new LiteralCmd());
 }
 
 void LiteralCmd::PrintUsage() {
@@ -222,7 +222,7 @@ ExpectedCmd<ModeCmd> ModeCmd::Create(std::string_view cmdline) {
     return std::unexpected(mode.error());
   }
 
-  return std::shared_ptr<ModeCmd>(new ModeCmd(*mode));
+  return std::unique_ptr<ModeCmd>(new ModeCmd(*mode));
 }
 
 void ModeCmd::PrintUsage() {
@@ -253,7 +253,7 @@ ExecStatus StatusCmd::Execute(Config& conf) {
 }
 
 ExpectedCmd<StatusCmd> StatusCmd::Create() {
-  return std::shared_ptr<StatusCmd>(new StatusCmd());
+  return std::unique_ptr<StatusCmd>(new StatusCmd());
 }
 
 void StatusCmd::PrintUsage() {
@@ -278,7 +278,7 @@ ExpectedCmd<TimeoutCmd> TimeoutCmd::Create(std::string_view cmdline) {
     return std::unexpected(timeout.error());
   }
 
-  return std::shared_ptr<TimeoutCmd>(new TimeoutCmd(*timeout));
+  return std::unique_ptr<TimeoutCmd>(new TimeoutCmd(*timeout));
 }
 
 void TimeoutCmd::PrintUsage() {
@@ -304,7 +304,7 @@ ExpectedCmd<RexmtCmd> RexmtCmd::Create(std::string_view cmdline) {
     return std::unexpected(rexmt_timeout.error());
   }
 
-  return std::shared_ptr<RexmtCmd>(new RexmtCmd(*rexmt_timeout));
+  return std::unique_ptr<RexmtCmd>(new RexmtCmd(*rexmt_timeout));
 }
 
 void RexmtCmd::PrintUsage() {
@@ -344,7 +344,7 @@ ExpectedCmd<HelpCmd> HelpCmd::Create(std::string_view cmdline) {
     return std::unexpected(ParseStatus::kInvalidNumArgs);
   }
 
-  return std::shared_ptr<HelpCmd>(new HelpCmd(args[1]));
+  return std::unique_ptr<HelpCmd>(new HelpCmd(args[1]));
 }
 
 void HelpCmd::PrintUsage() {
