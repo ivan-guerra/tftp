@@ -2,18 +2,15 @@
 
 #include <cstdlib>
 #include <iostream>
+#include <sstream>
+#include <string>
 #include <string_view>
 #include <vector>
 
-#include "client/cmd_processor.h"
+#include "client/cmd.h"
 #include "client/config.h"
 #include "common/parse.h"
 #include "common/types.h"
-
-static void PrintErrAndExit(std::string_view err_msg) {
-  std::cerr << "error: " << err_msg << std::endl;
-  std::exit(EXIT_FAILURE);
-}
 
 static void PrintUsage() {
   std::cout << "usage: tftpc [OPTION]..." << std::endl;
@@ -39,6 +36,87 @@ static void PrintUsage() {
   std::cout << "\t-l, --literal-mode\n\t\tinterpret the ':' character literally"
             << std::endl;
   std::cout << "\t-h, --help\n\t\tprint this help message" << std::endl;
+}
+
+template <typename T>
+static std::expected<tftp::client::CmdPtr, tftp::ParseStatus> CreateCmd() {
+  return T::Create();
+}
+
+template <typename T>
+static std::expected<tftp::client::CmdPtr, tftp::ParseStatus> CreateCmd(
+    std::string_view cmdline) {
+  return T::Create(cmdline);
+}
+
+static void PrintError(std::string_view err_msg) {
+  std::cout << "error: " << err_msg << std::endl;
+}
+
+static void PrintErrAndExit(std::string_view err_msg) {
+  PrintError(err_msg);
+  std::exit(EXIT_FAILURE);
+}
+
+static std::expected<tftp::client::CmdPtr, tftp::ParseStatus> LoadCmd(
+    std::string_view cmdline) {
+  /* Parse the command ID from the command line. */
+  std::istringstream is(cmdline.data());
+  tftp::client::Id cmd_id;
+  is >> cmd_id;
+
+  /* Create the command object. */
+  using tftp::ParseStatus;
+  using tftp::client::CmdPtr;
+
+  std::expected<CmdPtr, ParseStatus> cmd;
+  if (cmd_id == tftp::client::CmdId::kGet) {
+    cmd = CreateCmd<tftp::client::GetCmd>(cmdline);
+  } else if (cmd_id == tftp::client::CmdId::kPut) {
+    cmd = CreateCmd<tftp::client::PutCmd>(cmdline);
+  } else if (cmd_id == tftp::client::CmdId::kHelp) {
+    cmd = CreateCmd<tftp::client::HelpCmd>(cmdline);
+  } else if (cmd_id == tftp::client::CmdId::kMode) {
+    cmd = CreateCmd<tftp::client::ModeCmd>(cmdline);
+  } else if (cmd_id == tftp::client::CmdId::kStatus) {
+    cmd = CreateCmd<tftp::client::StatusCmd>();
+  } else if (cmd_id == tftp::client::CmdId::kConnect) {
+    cmd = CreateCmd<tftp::client::ConnectCmd>(cmdline);
+  } else if (cmd_id == tftp::client::CmdId::kLiteral) {
+    cmd = CreateCmd<tftp::client::LiteralCmd>();
+  } else if (cmd_id == tftp::client::CmdId::kTimeout) {
+    cmd = CreateCmd<tftp::client::TimeoutCmd>(cmdline);
+  } else if (cmd_id == tftp::client::CmdId::kRexmt) {
+    cmd = CreateCmd<tftp::client::RexmtCmd>(cmdline);
+  } else {
+    return std::unexpected(ParseStatus::kUnknownCmd);
+  }
+  return cmd;
+}
+
+static void RunCmdShell(tftp::client::Config& conf) {
+  static const char* kPrompt = "tftp> ";
+  std::cout << kPrompt;
+
+  std::string line;
+  while (std::getline(std::cin, line)) {
+    if (line == "quit") {
+      break;
+    }
+
+    if (!line.empty()) {
+      auto cmd = LoadCmd(line);
+      if (!cmd) { /* Unable to parse the commandline successfully. */
+        PrintError(tftp::kParseStatusToStr[cmd.error()]);
+      } else { /* Got a valid command, execute it. */
+        auto exec_stat = (*cmd)->Execute(conf);
+        if (exec_stat != tftp::client::ExecStatus::kSuccessfulExec) {
+          PrintError(tftp::client::kExecStatusToStr[exec_stat]);
+        }
+      }
+    }
+    std::cout << kPrompt;
+  }
 }
 
 int main(int argc, char** argv) {
@@ -124,8 +202,7 @@ int main(int argc, char** argv) {
 
   tftp::client::Config conf(mode, port_range, literal_mode, hostname, timeout,
                             rexmt_timeout);
-  tftp::client::CmdProcessor processor(conf);
-  processor.Run();
+  RunCmdShell(conf);
 
   std::exit(EXIT_SUCCESS);
 }
